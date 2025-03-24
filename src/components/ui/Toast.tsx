@@ -1,5 +1,4 @@
 import { ToastContainer, toast, ToastOptions } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 // Tipos de notificación disponibles
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
