@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { RegisterRequest, RegisterResponse, ConfirmEmailRequest } from '../types/auth.types';
+import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, LoginRequest, LoginResponse, ForgotPasswordRequest } from '../types/auth.types';
 import { authService } from '../services/auth.service';
 
 interface User {
@@ -25,6 +25,12 @@ interface AuthState {
     isLoading: boolean;
     error: string | null;
   };
+  forgotPassword: {
+    isSuccess: boolean;
+    isLoading: boolean;
+    error: string | null;
+    userExists: boolean | null;
+  };
 }
 
 const initialState: AuthState = {
@@ -42,6 +48,12 @@ const initialState: AuthState = {
     isSuccess: false,
     isLoading: false,
     error: null,
+  },
+  forgotPassword: {
+    isSuccess: false,
+    isLoading: false,
+    error: null,
+    userExists: null,
   },
 };
 
@@ -74,12 +86,25 @@ export const confirmEmail = createAsyncThunk(
 // Thunk para login
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async (data: { email: string; password: string }, { rejectWithValue }) => {
+  async (data: LoginRequest, { rejectWithValue }) => {
     try {
       const response = await authService.login(data);
       return response;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Error al iniciar sesión');
+    }
+  }
+);
+
+// Thunk para olvidar contraseña
+export const forgotPassword = createAsyncThunk(
+  'auth/forgotPassword',
+  async (data: ForgotPasswordRequest, { rejectWithValue }) => {
+    try {
+      const response = await authService.forgotPassword(data);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Error al solicitar recuperación de contraseña');
     }
   }
 );
@@ -108,6 +133,12 @@ const authSlice = createSlice({
       state.confirmEmail.isSuccess = false;
       state.confirmEmail.isLoading = false;
       state.confirmEmail.error = null;
+    },
+    resetForgotPasswordState: (state) => {
+      state.forgotPassword.isSuccess = false;
+      state.forgotPassword.isLoading = false;
+      state.forgotPassword.error = null;
+      state.forgotPassword.userExists = null;
     },
   },
   extraReducers: (builder) => {
@@ -152,9 +183,25 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      // Olvidar contraseña
+      .addCase(forgotPassword.pending, (state) => {
+        state.forgotPassword.isLoading = true;
+        state.forgotPassword.error = null;
+        state.forgotPassword.isSuccess = false;
+      })
+      .addCase(forgotPassword.fulfilled, (state, action) => {
+        state.forgotPassword.isLoading = false;
+        state.forgotPassword.isSuccess = true;
+        state.forgotPassword.userExists = action.payload.userExists;
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.forgotPassword.isLoading = false;
+        state.forgotPassword.error = action.payload as string;
+        state.forgotPassword.isSuccess = false;
       });
   },
 });
 
-export const { setCredentials, logout, resetRegisterState, resetConfirmEmailState } = authSlice.actions;
+export const { setCredentials, logout, resetRegisterState, resetConfirmEmailState, resetForgotPasswordState } = authSlice.actions;
 export default authSlice.reducer; 
