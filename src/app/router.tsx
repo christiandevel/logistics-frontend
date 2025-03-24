@@ -1,16 +1,14 @@
+import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { store } from './store';
-import React from 'react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 // Lazy loading de componentes
 const Login = React.lazy(() => import('../features/auth/pages/Login'));
 const Register = React.lazy(() => import('../features/auth/pages/Register'));
 const ForgotPassword = React.lazy(() => import('../features/auth/pages/ForgotPassword'));
+const ConfirmEmail = React.lazy(() => import('../features/auth/components/ConfirmEmail'));
 const RegisterSuccess = React.lazy(() => import('../features/auth/pages/RegisterSuccess'));
-// const Dashboard = React.lazy(() => import('../features/dashboard/pages/Dashboard'));
-// const Orders = React.lazy(() => import('../features/orders/pages/Orders'));
-// const Users = React.lazy(() => import('../features/users/pages/Users'));
 
 // Componente de protección de rutas
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -64,34 +62,12 @@ export const router = createBrowserRouter([
       </React.Suspense>
     ),
   },
-  // {
-  //   path: '/dashboard',
-  //   element: (
-  //     <ProtectedRoute>
-  //       <React.Suspense fallback={<LoadingSpinner />}>
-  //         <Dashboard />
-  //       </React.Suspense>
-  //     </ProtectedRoute>
-  //   ),
-  // },
-  // {
-  //   path: '/orders',
-  //   element: (
-  //     <ProtectedRoute>
-  //       <React.Suspense fallback={<LoadingSpinner />}>
-  //         <Orders />
-  //       </React.Suspense>
-  //     </ProtectedRoute>
-  //   ),
-  // },
-  // {
-  //   path: '/users',
-  //   element: (
-  //     <ProtectedRoute roles={['admin']}>
-  //       <React.Suspense fallback={<LoadingSpinner />}>
-  //         <Users />
-  //       </React.Suspense>
-  //     </ProtectedRoute>
-  //   ),
-  // },
+  {
+    path: '/confirm-email',
+    element: (
+      <React.Suspense fallback={<LoadingSpinner />}>
+        <ConfirmEmail />
+      </React.Suspense>
+    ),
+  },
 ]);
