@@ -4,7 +4,7 @@ import LoginForm from '../components/LoginForm';
 
 const Login: React.FC = () => {
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen w-full">
       <LoginImage />
       <LoginForm />
     </div>

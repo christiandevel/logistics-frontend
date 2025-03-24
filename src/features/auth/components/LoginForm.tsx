@@ -14,8 +14,8 @@ const LoginForm: React.FC = () => {
   return (
     <div className="w-full lg:w-1/2 h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Bienvenido</h2>
+        <div className="text-center mb-8 text-primary-500">
+          <h2 className="text-3xl font-bold ">Bienvenido</h2>
           <p className="mt-2 text-gray-600">Ingresa tus credenciales para continuar</p>
         </div>
 
@@ -30,7 +30,7 @@ const LoginForm: React.FC = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="input-primary mt-1"
               placeholder="ejemplo@correo.com"
             />
           </div>
@@ -45,19 +45,19 @@ const LoginForm: React.FC = () => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="input-primary mt-1"
               placeholder="••••••••"
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
             <div className="text-sm">
-              <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
                 Crear cuenta
               </Link>
             </div>
@@ -65,7 +65,7 @@ const LoginForm: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="btn-primary w-full"
           >
             Iniciar sesión
           </button>
