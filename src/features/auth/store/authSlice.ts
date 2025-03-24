@@ -31,6 +31,11 @@ interface AuthState {
     error: string | null;
     userExists: boolean | null;
   };
+  resetPassword: {
+    isLoading: boolean;
+    isSuccess: boolean;
+    error: string | null;
+  };
 }
 
 const initialState: AuthState = {
@@ -54,6 +59,11 @@ const initialState: AuthState = {
     isLoading: false,
     error: null,
     userExists: null,
+  },
+  resetPassword: {
+    isLoading: false,
+    isSuccess: false,
+    error: null,
   },
 };
 
@@ -109,6 +119,14 @@ export const forgotPassword = createAsyncThunk(
   }
 );
 
+export const resetPassword = createAsyncThunk(
+  'auth/resetPassword',
+  async ({ token, password, confirmPassword }: { token: string; password: string; confirmPassword: string }) => {
+    const response = await authService.resetPassword({ token, password, confirmPassword });
+    return response;
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -139,6 +157,13 @@ const authSlice = createSlice({
       state.forgotPassword.isLoading = false;
       state.forgotPassword.error = null;
       state.forgotPassword.userExists = null;
+    },
+    resetResetPasswordState: (state) => {
+      state.resetPassword = {
+        isLoading: false,
+        isSuccess: false,
+        error: null,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -199,9 +224,22 @@ const authSlice = createSlice({
         state.forgotPassword.isLoading = false;
         state.forgotPassword.error = action.payload as string;
         state.forgotPassword.isSuccess = false;
+      })
+      .addCase(resetPassword.pending, (state) => {
+        state.resetPassword.isLoading = true;
+        state.resetPassword.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.resetPassword.isLoading = false;
+        state.resetPassword.isSuccess = true;
+        state.resetPassword.error = null;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.resetPassword.isLoading = false;
+        state.resetPassword.error = action.error.message || 'Error al restablecer la contraseña';
       });
   },
 });
 
-export const { setCredentials, logout, resetRegisterState, resetConfirmEmailState, resetForgotPasswordState } = authSlice.actions;
+export const { setCredentials, logout, resetRegisterState, resetConfirmEmailState, resetForgotPasswordState, resetResetPasswordState } = authSlice.actions;
 export default authSlice.reducer; 

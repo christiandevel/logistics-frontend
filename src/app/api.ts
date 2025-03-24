@@ -28,4 +28,18 @@ api.interceptors.response.use(
   }
 );
 
+// Reset password service
+export const resetPassword = async (token: string, password: string, confirmPassword: string) => {
+  try {
+    const response = await api.post('/auth/reset-password', {
+      token,
+      password,
+      confirmPassword
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { message: 'Error resetting password' };
+  }
+};
+
 export default api; 
