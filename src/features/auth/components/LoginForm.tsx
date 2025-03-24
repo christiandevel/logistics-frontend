@@ -24,7 +24,7 @@ const LoginForm: React.FC = () => {
     if (loginStatus === 'SUCCESS') {
       navigate('/dashboard');
     } else if (loginStatus === 'REQUIRED_PASSWORD_CHANGE') {
-      navigate('/reset-password');
+      navigate('/reset-first-password');
     }
   }, [loginStatus, navigate]);
 

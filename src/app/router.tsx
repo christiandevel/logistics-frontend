@@ -9,6 +9,7 @@ const Register = React.lazy(() => import('../features/auth/pages/Register'));
 const ForgotPassword = React.lazy(() => import('../features/auth/pages/ForgotPassword'));
 const ConfirmEmail = React.lazy(() => import('../features/auth/components/ConfirmEmail'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
+const ResetFirstPassword = React.lazy(() => import('../features/auth/pages/ResetFirstPassword'));
 
 // Componente de protección de rutas
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -67,6 +68,14 @@ export const router = createBrowserRouter([
     element: (
       <React.Suspense fallback={<LoadingSpinner />}>
         <ResetPassword />
+      </React.Suspense>
+    ),
+  },
+  {
+    path: '/reset-first-password',
+    element: (
+      <React.Suspense fallback={<LoadingSpinner />}>
+        <ResetFirstPassword />
       </React.Suspense>
     ),
   },
