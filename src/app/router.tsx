@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { store } from './store';
 import React from 'react';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 // Lazy loading de componentes
 const Login = React.lazy(() => import('../features/auth/pages/Login'));
@@ -33,7 +34,7 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: (
-      <React.Suspense fallback={<div>Loading...</div>}>
+      <React.Suspense fallback={<LoadingSpinner />}>
         <Login />
       </React.Suspense>
     ),
@@ -41,7 +42,7 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: (
-      <React.Suspense fallback={<div>Loading...</div>}>
+      <React.Suspense fallback={<LoadingSpinner />}>
         <Register />
       </React.Suspense>
     ),
@@ -49,7 +50,7 @@ export const router = createBrowserRouter([
   {
     path: '/forgot-password',
     element: (
-      <React.Suspense fallback={<div>Loading...</div>}>
+      <React.Suspense fallback={<LoadingSpinner />}>
         <ForgotPassword />
       </React.Suspense>
     ),
@@ -58,7 +59,7 @@ export const router = createBrowserRouter([
   //   path: '/dashboard',
   //   element: (
   //     <ProtectedRoute>
-  //       <React.Suspense fallback={<div>Loading...</div>}>
+  //       <React.Suspense fallback={<LoadingSpinner />}>
   //         <Dashboard />
   //       </React.Suspense>
   //     </ProtectedRoute>
@@ -68,7 +69,7 @@ export const router = createBrowserRouter([
   //   path: '/orders',
   //   element: (
   //     <ProtectedRoute>
-  //       <React.Suspense fallback={<div>Loading...</div>}>
+  //       <React.Suspense fallback={<LoadingSpinner />}>
   //         <Orders />
   //       </React.Suspense>
   //     </ProtectedRoute>
@@ -78,7 +79,7 @@ export const router = createBrowserRouter([
   //   path: '/users',
   //   element: (
   //     <ProtectedRoute roles={['admin']}>
-  //       <React.Suspense fallback={<div>Loading...</div>}>
+  //       <React.Suspense fallback={<LoadingSpinner />}>
   //         <Users />
   //       </React.Suspense>
   //     </ProtectedRoute>
