@@ -4,7 +4,8 @@ import React from 'react';
 
 // Lazy loading de componentes
 const Login = React.lazy(() => import('../features/auth/pages/Login'));
-// const Register = React.lazy(() => import('../features/auth/pages/Register'));
+const Register = React.lazy(() => import('../features/auth/pages/Register'));
+const ForgotPassword = React.lazy(() => import('../features/auth/pages/ForgotPassword'));
 // const Dashboard = React.lazy(() => import('../features/dashboard/pages/Dashboard'));
 // const Orders = React.lazy(() => import('../features/orders/pages/Orders'));
 // const Users = React.lazy(() => import('../features/users/pages/Users'));
@@ -37,14 +38,22 @@ export const router = createBrowserRouter([
       </React.Suspense>
     ),
   },
-  // {
-  //   path: '/register',
-  //   element: (
-  //     <React.Suspense fallback={<div>Loading...</div>}>
-  //       <Register />
-  //     </React.Suspense>
-  //   ),
-  // },
+  {
+    path: '/register',
+    element: (
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <Register />
+      </React.Suspense>
+    ),
+  },
+  {
+    path: '/forgot-password',
+    element: (
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <ForgotPassword />
+      </React.Suspense>
+    ),
+  },
   // {
   //   path: '/dashboard',
   //   element: (
