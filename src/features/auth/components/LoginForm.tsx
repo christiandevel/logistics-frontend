@@ -1,25 +1,92 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../app/store';
 import { loginUser } from '../store/authSlice';
+import { showToast } from '../../../components/ui/Toast';
 
 const LoginForm: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoading, error } = useSelector((state: RootState) => state.auth);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const { isLoading, loginStatus } = useSelector((state: RootState) => state.auth);
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  
+  const [formErrors, setFormErrors] = useState({
+    email: '',
+    password: ''
+  });
+
+  useEffect(() => {
+    if (loginStatus === 'SUCCESS') {
+      navigate('/dashboard');
+    } else if (loginStatus === 'REQUIRED_PASSWORD_CHANGE') {
+      navigate('/reset-password');
+    }
+  }, [loginStatus, navigate]);
+
+  const validateForm = () => {
+    let isValid = true;
+    const errors = {
+      email: '',
+      password: ''
+    };
+
+    // Validación de email
+    if (!formData.email) {
+      errors.email = 'El correo electrónico es requerido';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Por favor, ingresa un correo electrónico válido';
+      isValid = false;
+    }
+
+    // Validación de contraseña
+    if (!formData.password) {
+      errors.password = 'La contraseña es requerida';
+      isValid = false;
+    } else if (formData.password.length < 8) {
+      errors.password = 'La contraseña debe tener al menos 8 caracteres';
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Limpiar el error cuando el usuario empieza a escribir
+    if (formErrors[name as keyof typeof formErrors]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(loginUser({ email, password }));
+    
+    if (validateForm()) {
+      dispatch(loginUser(formData));
+    } else {
+      showToast('Por favor, corrige los errores en el formulario', 'error');
+    }
   };
 
   return (
     <div className="w-full lg:w-1/2 h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md p-8">
-        <div className="text-center mb-8 text-primary-500">
-          <h2 className="text-3xl font-bold ">Bienvenido</h2>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900">Bienvenido</h2>
           <p className="mt-2 text-gray-600">Ingresa tus credenciales para continuar</p>
         </div>
 
@@ -30,13 +97,19 @@ const LoginForm: React.FC = () => {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-primary mt-1"
+              value={formData.email}
+              onChange={handleChange}
+              className={`mt-1 block w-full px-3 py-2 border ${
+                formErrors.email ? 'border-red-500' : 'border-gray-300'
+              } rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm`}
               placeholder="ejemplo@correo.com"
             />
+            {formErrors.email && (
+              <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>
+            )}
           </div>
 
           <div>
@@ -45,39 +118,20 @@ const LoginForm: React.FC = () => {
             </label>
             <input
               id="password"
+              name="password"
               type="password"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-primary mt-1"
+              value={formData.password}
+              onChange={handleChange}
+              className={`mt-1 block w-full px-3 py-2 border ${
+                formErrors.password ? 'border-red-500' : 'border-gray-300'
+              } rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm`}
               placeholder="••••••••"
             />
+            {formErrors.password && (
+              <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
+            )}
           </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Error al iniciar sesión
-                  </h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{error}</p>
-                    {error.includes('no verificado') && (
-                      <p className="mt-1">
-                        Por favor, revisa tu correo electrónico y sigue las instrucciones para verificar tu cuenta.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
@@ -94,7 +148,7 @@ const LoginForm: React.FC = () => {
 
           <button
             type="submit"
-            className="btn-primary w-full"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
             {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}

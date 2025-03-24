@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, LoginRequest, LoginResponse, ForgotPasswordRequest } from '../types/auth.types';
+import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, LoginRequest, LoginResponse, ForgotPasswordRequest, LoginStatus } from '../types/auth.types';
 import { authService } from '../services/auth.service';
+import { decodeToken } from '../../../utils/jwt';
+import { showToast } from '../../../components/ui/Toast';
 
 interface User {
-  id: number;
+  id: string;
   email: string;
   role: string;
-  isVerified: boolean;
 }
 
 interface AuthState {
@@ -14,6 +15,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  loginStatus: LoginStatus | null;
   error: string | null;
   register: {
     isSuccess: boolean;
@@ -43,6 +45,7 @@ const initialState: AuthState = {
   token: null,
   isAuthenticated: false,
   isLoading: false,
+  loginStatus: null,
   error: null,
   register: {
     isSuccess: false,
@@ -65,6 +68,30 @@ const initialState: AuthState = {
     isSuccess: false,
     error: null,
   },
+};
+
+const getErrorMessage = (error: any): string => {
+  if (!error.response) {
+    return 'Error de conexión. Por favor, intenta más tarde.';
+  }
+
+  const { status, data } = error.response;
+  const message = data?.message;
+
+  if (message === 'Incorrect password') {
+    return 'Contraseña incorrecta. Por favor, verifica tus credenciales.';
+  }
+
+  switch (status) {
+    case 400:
+      return message || 'Credenciales inválidas. Por favor, verifica tu email y contraseña.';
+    case 404:
+      return message || 'Usuario no encontrado. Por favor, verifica tu email.';
+    case 500:
+      return message || 'Error en el servidor. Por favor, intenta más tarde.';
+    default:
+      return message || 'Error al iniciar sesión';
+  }
 };
 
 // Thunk para registro
@@ -100,8 +127,11 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await authService.login(data);
       return response;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Error al iniciar sesión');
+    } catch (error: any) {
+      console.log('Login error:', error); // Para debugging
+      const errorMessage = getErrorMessage(error);
+      showToast(errorMessage, 'error');
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -198,16 +228,32 @@ const authSlice = createSlice({
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.loginStatus = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
+        state.loginStatus = action.payload.status;
+        
+        if (action.payload.status === 'SUCCESS') {
+          const decodedToken = decodeToken(action.payload.token);
+          state.user = {
+            id: decodedToken.id,
+            email: decodedToken.email,
+            role: decodedToken.role,
+          };
+          state.token = action.payload.token;
+          state.isAuthenticated = true;
+          showToast('Inicio de sesión exitoso', 'success');
+        } else if (action.payload.status === 'REQUIRED_EMAIL_VERIFICATION') {
+          showToast('Por favor, verifica tu correo electrónico para continuar', 'warning');
+        } else if (action.payload.status === 'REQUIRED_PASSWORD_CHANGE') {
+          showToast('Es necesario cambiar tu contraseña', 'warning');
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+        state.loginStatus = null;
       })
       // Olvidar contraseña
       .addCase(forgotPassword.pending, (state) => {
