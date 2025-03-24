@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../app/store';
+import { registerUser, resetRegisterState } from '../store/authSlice';
+import { RegisterRequest } from '../types/auth.types';
 
 const RegisterForm: React.FC = () => {
-  const [formData, setFormData] = useState({
-    fullName: '',
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { isSuccess, isLoading, error } = useSelector((state: RootState) => state.auth.register);
+
+  const [formData, setFormData] = useState<RegisterRequest>({
+    full_name: '',
     email: '',
     password: '',
-    confirmPassword: '',
+    role: 'user',
   });
-  const [error, setError] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formError, setFormError] = useState('');
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetRegisterState());
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      navigate('/register-success');
+    }
+  }, [isSuccess, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -20,29 +41,33 @@ const RegisterForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setFormError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
+    if (formData.password !== confirmPassword) {
+      setFormError('Las contraseñas no coinciden');
       return;
     }
 
-    // TODO: Implementar la lógica de registro
-    console.log('Datos de registro:', formData);
+    if (formData.password.length < 6) {
+      setFormError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    dispatch(registerUser(formData));
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
           Nombre completo
         </label>
         <input
-          id="fullName"
-          name="fullName"
+          id="full_name"
+          name="full_name"
           type="text"
           required
-          value={formData.fullName}
+          value={formData.full_name}
           onChange={handleChange}
           className="input-primary mt-1"
           placeholder="Tu nombre completo"
@@ -87,25 +112,28 @@ const RegisterForm: React.FC = () => {
         </label>
         <input
           id="confirmPassword"
-          name="confirmPassword"
           type="password"
           required
-          value={formData.confirmPassword}
-          onChange={handleChange}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           className="input-primary mt-1"
           placeholder="••••••••"
         />
       </div>
 
-      {error && (
+      {(formError || error) && (
         <div className="text-red-600 text-sm">
-          {error}
+          {formError || error}
         </div>
       )}
 
       <div>
-        <button type="submit" className="btn-primary w-full">
-          Crear cuenta
+        <button 
+          type="submit" 
+          className="btn-primary w-full"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
         </button>
       </div>
 
