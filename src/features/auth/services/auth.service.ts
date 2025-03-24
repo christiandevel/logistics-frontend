@@ -1,13 +1,6 @@
 import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, ConfirmEmailResponse, LoginRequest, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse, SetInitialPasswordRequest, SetInitialPasswordResponse } from '../types/auth.types';
 import { API_URL } from '../../../config/api';
 
-class ApiError extends Error {
-  constructor(public status: number, public message: string) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
-
 export const authService = {
   register: async (data: RegisterRequest): Promise<RegisterResponse> => {
     const response = await fetch(`${API_URL}/auth/register`, {
