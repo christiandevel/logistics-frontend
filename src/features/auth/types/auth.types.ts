@@ -14,7 +14,37 @@ export interface RegisterResponse {
   };
 }
 
+export interface ConfirmEmailRequest {
+  token: string;
+}
+
+export interface ConfirmEmailResponse {
+  message: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  message: string;
+  token: string;
+  user: {
+    id: number;
+    email: string;
+    role: string;
+    isVerified: boolean;
+  };
+}
+
 export interface RegisterState {
+  isSuccess: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface ConfirmEmailState {
   isSuccess: boolean;
   isLoading: boolean;
   error: string | null;
