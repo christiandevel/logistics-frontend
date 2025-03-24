@@ -5,6 +5,8 @@ import { AppDispatch, RootState } from '../../../app/store';
 import { registerUser, resetRegisterState } from '../store/authSlice';
 import { RegisterRequest } from '../types/auth.types';
 
+import { showToast } from '../../../components/ui/Toast';
+
 const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -27,7 +29,12 @@ const RegisterForm: React.FC = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      navigate('/register-success');
+      showToast('¡Registro exitoso! Por favor, revisa tu correo electrónico para confirmar tu cuenta.', 'success', {
+        autoClose: 3000,
+      });
+      setTimeout(() => {
+        navigate('/login');
+      }, 1000);
     }
   }, [isSuccess, navigate]);
 
