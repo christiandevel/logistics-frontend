@@ -64,4 +64,16 @@ export interface ForgotPasswordState {
   isLoading: boolean;
   error: string | null;
   userExists: boolean | null;
+}
+
+export interface SetInitialPasswordRequest {
+  userId: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface SetInitialPasswordResponse {
+  message: string;
+  status: 'SUCCESS';
 } 

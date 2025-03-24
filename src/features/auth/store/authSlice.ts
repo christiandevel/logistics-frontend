@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, LoginRequest, LoginResponse, ForgotPasswordRequest, LoginStatus } from '../types/auth.types';
+import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, LoginRequest, LoginResponse, ForgotPasswordRequest, LoginStatus, SetInitialPasswordRequest } from '../types/auth.types';
 import { authService } from '../services/auth.service';
 import { decodeToken } from '../../../utils/jwt';
 import { showToast } from '../../../components/ui/Toast';
@@ -8,6 +8,7 @@ interface User {
   id: string;
   email: string;
   role: string;
+  isVerified?: boolean;
 }
 
 interface AuthState {
@@ -70,6 +71,13 @@ const initialState: AuthState = {
   },
 };
 
+const ERROR_MESSAGES: Record<string | number, string> = {
+  'Incorrect password': 'Contraseña incorrecta. Por favor, verifica tus credenciales.',
+  400: 'Credenciales inválidas. Por favor, verifica tu email y contraseña.',
+  404: 'Usuario no encontrado. Por favor, verifica tu email.',
+  500: 'Error en el servidor. Por favor, intenta más tarde.',
+} as const;
+
 const getErrorMessage = (error: any): string => {
   if (!error.response) {
     return 'Error de conexión. Por favor, intenta más tarde.';
@@ -79,19 +87,10 @@ const getErrorMessage = (error: any): string => {
   const message = data?.message;
 
   if (message === 'Incorrect password') {
-    return 'Contraseña incorrecta. Por favor, verifica tus credenciales.';
+    return ERROR_MESSAGES['Incorrect password'];
   }
 
-  switch (status) {
-    case 400:
-      return message || 'Credenciales inválidas. Por favor, verifica tu email y contraseña.';
-    case 404:
-      return message || 'Usuario no encontrado. Por favor, verifica tu email.';
-    case 500:
-      return message || 'Error en el servidor. Por favor, intenta más tarde.';
-    default:
-      return message || 'Error al iniciar sesión';
-  }
+  return ERROR_MESSAGES[status] || message || 'Error al iniciar sesión';
 };
 
 // Thunk para registro
@@ -154,6 +153,19 @@ export const resetPassword = createAsyncThunk(
   async ({ token, password, confirmPassword }: { token: string; password: string; confirmPassword: string }) => {
     const response = await authService.resetPassword({ token, password, confirmPassword });
     return response;
+  }
+);
+
+export const setInitialPassword = createAsyncThunk(
+  'auth/setInitialPassword',
+  async (data: SetInitialPasswordRequest, { rejectWithValue }) => {
+    try {
+      const response = await authService.setInitialPassword(data);
+      return response;
+    } catch (error: any) {
+      const message = getErrorMessage(error);
+      return rejectWithValue(message);
+    }
   }
 );
 
@@ -233,21 +245,27 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.loginStatus = action.payload.status;
+        state.error = null;
         
-        if (action.payload.status === 'SUCCESS') {
-          const decodedToken = decodeToken(action.payload.token);
-          state.user = {
-            id: decodedToken.id,
-            email: decodedToken.email,
-            role: decodedToken.role,
-          };
-          state.token = action.payload.token;
-          state.isAuthenticated = true;
-          showToast('Inicio de sesión exitoso', 'success');
-        } else if (action.payload.status === 'REQUIRED_EMAIL_VERIFICATION') {
-          showToast('Por favor, verifica tu correo electrónico para continuar', 'warning');
-        } else if (action.payload.status === 'REQUIRED_PASSWORD_CHANGE') {
-          showToast('Es necesario cambiar tu contraseña', 'warning');
+        const { id, email, role } = action.payload.user as { id: string | number; email: string; role: string };
+        state.user = {
+          id: String(id),
+          email,
+          role
+        };
+        state.token = action.payload.token;
+        
+        const statusMessages = {
+          'SUCCESS': { message: 'Inicio de sesión exitoso', type: 'success' as const },
+          'REQUIRED_PASSWORD_CHANGE': { message: 'Es necesario cambiar tu contraseña', type: 'warning' as const },
+          'REQUIRED_EMAIL_VERIFICATION': { message: 'Por favor, verifica tu correo electrónico para continuar', type: 'warning' as const }
+        };
+
+        state.isAuthenticated = action.payload.status === 'SUCCESS';
+        
+        const statusConfig = statusMessages[action.payload.status];
+        if (statusConfig) {
+          showToast(statusConfig.message, statusConfig.type);
         }
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -283,6 +301,21 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.resetPassword.isLoading = false;
         state.resetPassword.error = action.error.message || 'Error al restablecer la contraseña';
+      })
+      .addCase(setInitialPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(setInitialPassword.fulfilled, (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        state.loginStatus = null;
+      })
+      .addCase(setInitialPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
