@@ -1,4 +1,4 @@
-import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, ConfirmEmailResponse, LoginRequest, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse } from '../types/auth.types';
+import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, ConfirmEmailResponse, LoginRequest, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse, SetInitialPasswordRequest, SetInitialPasswordResponse } from '../types/auth.types';
 import { API_URL } from '../../../config/api';
 
 class ApiError extends Error {
@@ -98,5 +98,28 @@ export const authService = {
     }
 
     return response.json();
+  },
+
+  setInitialPassword: async (data: SetInitialPasswordRequest): Promise<SetInitialPasswordResponse> => {
+    const response = await fetch(`${API_URL}/auth/set-initial-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw {
+        response: {
+          status: response.status,
+          data: responseData
+        }
+      };
+    }
+
+    return responseData;
   },
 }; 
