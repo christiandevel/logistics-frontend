@@ -4,10 +4,10 @@ import React from 'react';
 
 // Lazy loading de componentes
 const Login = React.lazy(() => import('../features/auth/pages/Login'));
-const Register = React.lazy(() => import('../features/auth/pages/Register'));
-const Dashboard = React.lazy(() => import('../features/dashboard/pages/Dashboard'));
-const Orders = React.lazy(() => import('../features/orders/pages/Orders'));
-const Users = React.lazy(() => import('../features/users/pages/Users'));
+// const Register = React.lazy(() => import('../features/auth/pages/Register'));
+// const Dashboard = React.lazy(() => import('../features/dashboard/pages/Dashboard'));
+// const Orders = React.lazy(() => import('../features/orders/pages/Orders'));
+// const Users = React.lazy(() => import('../features/users/pages/Users'));
 
 // Componente de protección de rutas
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -37,42 +37,42 @@ export const router = createBrowserRouter([
       </React.Suspense>
     ),
   },
-  {
-    path: '/register',
-    element: (
-      <React.Suspense fallback={<div>Loading...</div>}>
-        <Register />
-      </React.Suspense>
-    ),
-  },
-  {
-    path: '/dashboard',
-    element: (
-      <ProtectedRoute>
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <Dashboard />
-        </React.Suspense>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/orders',
-    element: (
-      <ProtectedRoute>
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <Orders />
-        </React.Suspense>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/users',
-    element: (
-      <ProtectedRoute roles={['admin']}>
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <Users />
-        </React.Suspense>
-      </ProtectedRoute>
-    ),
-  },
+  // {
+  //   path: '/register',
+  //   element: (
+  //     <React.Suspense fallback={<div>Loading...</div>}>
+  //       <Register />
+  //     </React.Suspense>
+  //   ),
+  // },
+  // {
+  //   path: '/dashboard',
+  //   element: (
+  //     <ProtectedRoute>
+  //       <React.Suspense fallback={<div>Loading...</div>}>
+  //         <Dashboard />
+  //       </React.Suspense>
+  //     </ProtectedRoute>
+  //   ),
+  // },
+  // {
+  //   path: '/orders',
+  //   element: (
+  //     <ProtectedRoute>
+  //       <React.Suspense fallback={<div>Loading...</div>}>
+  //         <Orders />
+  //       </React.Suspense>
+  //     </ProtectedRoute>
+  //   ),
+  // },
+  // {
+  //   path: '/users',
+  //   element: (
+  //     <ProtectedRoute roles={['admin']}>
+  //       <React.Suspense fallback={<div>Loading...</div>}>
+  //         <Users />
+  //       </React.Suspense>
+  //     </ProtectedRoute>
+  //   ),
+  // },
 ]);
