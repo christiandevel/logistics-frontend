@@ -22,20 +22,20 @@ export interface ConfirmEmailResponse {
   message: string;
 }
 
+export type LoginStatus = 'SUCCESS' | 'REQUIRED_EMAIL_VERIFICATION' | 'REQUIRED_PASSWORD_CHANGE';
+
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
 export interface LoginResponse {
-  message: string;
-  token: string;
   user: {
-    id: number;
+    id: string;
     email: string;
-    role: string;
-    isVerified: boolean;
   };
+  token: string;
+  status: LoginStatus;
 }
 
 export interface ForgotPasswordRequest {
