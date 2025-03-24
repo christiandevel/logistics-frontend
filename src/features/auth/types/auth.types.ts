@@ -38,6 +38,15 @@ export interface LoginResponse {
   };
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  userExists: boolean;
+}
+
 export interface RegisterState {
   isSuccess: boolean;
   isLoading: boolean;
@@ -48,4 +57,11 @@ export interface ConfirmEmailState {
   isSuccess: boolean;
   isLoading: boolean;
   error: string | null;
+}
+
+export interface ForgotPasswordState {
+  isSuccess: boolean;
+  isLoading: boolean;
+  error: string | null;
+  userExists: boolean | null;
 } 
