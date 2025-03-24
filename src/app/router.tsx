@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 const Login = React.lazy(() => import('../features/auth/pages/Login'));
 const Register = React.lazy(() => import('../features/auth/pages/Register'));
 const ForgotPassword = React.lazy(() => import('../features/auth/pages/ForgotPassword'));
+const RegisterSuccess = React.lazy(() => import('../features/auth/pages/RegisterSuccess'));
 // const Dashboard = React.lazy(() => import('../features/dashboard/pages/Dashboard'));
 // const Orders = React.lazy(() => import('../features/orders/pages/Orders'));
 // const Users = React.lazy(() => import('../features/users/pages/Users'));
@@ -44,6 +45,14 @@ export const router = createBrowserRouter([
     element: (
       <React.Suspense fallback={<LoadingSpinner />}>
         <Register />
+      </React.Suspense>
+    ),
+  },
+  {
+    path: '/register-success',
+    element: (
+      <React.Suspense fallback={<LoadingSpinner />}>
+        <RegisterSuccess />
       </React.Suspense>
     ),
   },
