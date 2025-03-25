@@ -11,4 +11,9 @@ export const orderService = {
     const response = await api.get(`/shipments/user/${userId}`);
     return response.data;
   },
+
+  getAllOrders: async (): Promise<Order[]> => {
+    const response = await api.get('/shipments');
+    return response.data;
+  },
 }; 

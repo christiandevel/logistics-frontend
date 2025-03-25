@@ -15,6 +15,7 @@ const menuByRole: Record<string, MenuItem[]> = {
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Asignar Rutas', path: '/dashboard/assign-routes' },
     { label: 'Gestionar Usuarios', path: '/dashboard/users' },
+    { label: 'Ver Todas las Órdenes', path: '/dashboard/admin/orders' },
   ],
   driver: [
     { label: 'Dashboard', path: '/dashboard' },

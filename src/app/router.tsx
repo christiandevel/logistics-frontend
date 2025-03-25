@@ -15,6 +15,7 @@ const DashboardLayout = React.lazy(() => import('../features/dashboard/component
 const Dashboard = React.lazy(() => import('../features/dashboard/components/Dashboard'));
 const CreateOrderForm = React.lazy(() => import('../features/orders/components/CreateOrderForm'));
 const UserOrders = React.lazy(() => import('../features/orders/components/UserOrders'));
+const AdminOrders = React.lazy(() => import('../features/orders/components/AdminOrders'));
 
 // Componente de protección de rutas
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -120,6 +121,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute roles={['driver', 'user']}>
             <React.Suspense fallback={<LoadingSpinner />}>
               <UserOrders />
+            </React.Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'admin/orders',
+        element: (
+          <ProtectedRoute roles={['admin']}>
+            <React.Suspense fallback={<LoadingSpinner />}>
+              <AdminOrders />
             </React.Suspense>
           </ProtectedRoute>
         ),
