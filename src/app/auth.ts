@@ -14,6 +14,7 @@ interface RegisterData {
   role: 'admin' | 'driver' | 'user';
 }
 
+// Auth service
 export const authService = {
   async login(credentials: LoginCredentials) {
     try {
@@ -28,6 +29,7 @@ export const authService = {
     }
   },
 
+  // Register user
   async register(data: RegisterData) {
     try {
       const response = await api.post('/auth/register', data);
@@ -37,11 +39,13 @@ export const authService = {
     }
   },
 
+  // Logout
   async logout() {
     localStorage.removeItem('token');
     store.dispatch({ type: 'auth/logout' });
   },
 
+  // Get current user
   async getCurrentUser() {
     try {
       const response = await api.get('/auth/me');

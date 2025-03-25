@@ -8,7 +8,7 @@ const api = axios.create({
   },
 });
 
-// Interceptor para agregar el token a las peticiones
+// Interceptor to add the token to the requests
 api.interceptors.request.use((config) => {
   const token = store.getState().auth.token;
   if (token) {
@@ -17,7 +17,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor para manejar errores
+// Interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
