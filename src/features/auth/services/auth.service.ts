@@ -2,6 +2,8 @@ import { RegisterRequest, RegisterResponse, ConfirmEmailRequest, ConfirmEmailRes
 import { API_URL } from '../../../config/api';
 
 export const authService = {
+  
+  // Register new user
   register: async (data: RegisterRequest): Promise<RegisterResponse> => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
@@ -19,6 +21,7 @@ export const authService = {
     return response.json();
   },
 
+  // Confirm email
   confirmEmail: async (data: ConfirmEmailRequest): Promise<ConfirmEmailResponse> => {
     const response = await fetch(`${API_URL}/auth/confirm-email`, {
       method: 'POST',
@@ -36,6 +39,7 @@ export const authService = {
     return response.json();
   },
 
+  // Login
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -65,11 +69,13 @@ export const authService = {
     return responseData;
   },
 
+  // Logout
   logout: () => {
     localStorage.removeItem('token');
     console.log('Token removido de localStorage');
   },
 
+  // Forgot password
   forgotPassword: async (data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {
     const response = await fetch(`${API_URL}/auth/forgot-password`, {
       method: 'POST',
@@ -87,6 +93,7 @@ export const authService = {
     return response.json();
   },
 
+  // Reset password
   resetPassword: async ({ token, password, confirmPassword }: { token: string; password: string; confirmPassword: string }): Promise<{ message: string }> => {
     const response = await fetch(`${API_URL}/auth/reset-password`, {
       method: 'POST',
@@ -104,6 +111,7 @@ export const authService = {
     return response.json();
   },
 
+  // Set initial password
   setInitialPassword: async (data: SetInitialPasswordRequest): Promise<SetInitialPasswordResponse> => {
     const response = await fetch(`${API_URL}/auth/set-initial-password`, {
       method: 'POST',

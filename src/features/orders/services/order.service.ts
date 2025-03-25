@@ -5,41 +5,50 @@ import { CreateOrderRequest, Order, OrderHistory, StatisticsResponse } from '../
 export type OrderStatus = 'PENDING' | 'PICKED_UP'  | 'DELIVERED' | 'ALL';
 
 export const orderService = {
+  
+  // Create order
   createOrder: async (orderData: CreateOrderRequest): Promise<Order> => {
     const response = await api.post('/shipments', orderData);
     return response.data;
   },
 
+  // Get user orders
   getUserOrders: async (userId: number): Promise<Order[]> => {
     const response = await api.get(`/shipments/user/${userId}`);
     return response.data;
   },
 
+  // Get all orders
   getAllOrders: async (): Promise<Order[]> => {
     const response = await api.get('/shipments');
     return response.data;
   },
 
+  // Get driver assigned orders
   getDriverAssignedOrders: async (): Promise<Order[]> => {
     const response = await api.get('/shipments/driver/assigned');
     return response.data;
   },
 
+  // Assign driver to order
   assignDriver: async (orderId: string, driverId: string): Promise<Order> => {
     const response = await api.put(`/shipments/${orderId}/driver`, { driverId });
     return response.data;
   },
 
+  // Update order status
   updateOrderStatus: async (orderId: string, status: Exclude<OrderStatus, 'ALL'>): Promise<Order> => {
     const response = await api.put(`/shipments/${orderId}/status`, { status: status.toLowerCase() });
     return response.data;
   },
 
+  // Get order history
   getOrderHistory: async (orderId: string): Promise<OrderHistory[]> => {
     const response = await api.get(`/shipments/${orderId}/history`);
     return response.data;
   },
-  
+
+  // Subscribe to order updates
   subscribeToOrderUpdates: (orderId: string, callback: (update: OrderHistory) => void) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
     const token = localStorage.getItem('token');
@@ -97,6 +106,7 @@ export const orderService = {
     };
   },
 
+  // Get shipment statistics
   getShipmentStatistics: async (): Promise<StatisticsResponse> => {
     const response = await api.get('/shipments/statistics');
     return response.data;

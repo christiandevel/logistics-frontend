@@ -31,6 +31,7 @@ interface RegisterError {
 class UserService {
   private baseUrl = `${API_URL}/users`;
 
+  // Get drivers
   async getDrivers(): Promise<User[]> {
     try {
       const response = await axios.get(`${this.baseUrl}/driver`, {
@@ -45,6 +46,7 @@ class UserService {
     }
   }
 
+  // Create driver
   async createDriver(userData: {
     email: string;
     firstName: string;
