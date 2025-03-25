@@ -14,6 +14,7 @@ const ResetFirstPassword = React.lazy(() => import('../features/auth/pages/Reset
 const DashboardLayout = React.lazy(() => import('../features/dashboard/components/DashboardLayout'));
 const Dashboard = React.lazy(() => import('../features/dashboard/components/Dashboard'));
 const CreateOrderForm = React.lazy(() => import('../features/orders/components/CreateOrderForm'));
+const UserOrders = React.lazy(() => import('../features/orders/components/UserOrders'));
 
 // Componente de protección de rutas
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -117,7 +118,9 @@ export const router = createBrowserRouter([
         path: 'my-orders',
         element: (
           <ProtectedRoute roles={['driver', 'user']}>
-            <div>Mis Órdenes</div>
+            <React.Suspense fallback={<LoadingSpinner />}>
+              <UserOrders />
+            </React.Suspense>
           </ProtectedRoute>
         ),
       },

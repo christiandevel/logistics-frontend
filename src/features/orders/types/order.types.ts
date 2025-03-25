@@ -1,4 +1,4 @@
-export type ProductType = "electronic" | "food" | "medicine" | "other";
+export type ProductType = 'electronic' | 'food' | 'medicine' | 'other';
 
 export interface CreateOrderRequest {
   origin: string;
@@ -12,6 +12,14 @@ export interface CreateOrderRequest {
   productType: ProductType;
   isFragile: boolean;
   specialInstructions?: string;
+}
+
+export interface Order extends CreateOrderRequest {
+  id: string;
+  userId: number;
+  status: 'PENDING' | 'IN_PROGRESS' | 'DELIVERED' | 'CANCELLED';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateOrderResponse {
