@@ -41,7 +41,7 @@ const ForgotPassword: React.FC = () => {
     try {
       await dispatch(forgotPassword({ email })).unwrap();
     } catch (error) {
-      console.error('Error al solicitar recuperación de contraseña:', error);
+      // Error handling is done by the reducer
     }
   };
 
