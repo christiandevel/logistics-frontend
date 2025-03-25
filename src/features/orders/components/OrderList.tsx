@@ -13,6 +13,13 @@ const statusColors: Record<OrderStatus, string> = {
   ALL: '', // Este estado no se usa para mostrar colores
 };
 
+const statusLabels: Record<OrderStatus, string> = {
+  PENDING: 'Pendiente',
+  PICKED_UP: 'Recogido',
+  DELIVERED: 'Entregado',
+  ALL: 'Todos',
+};
+
 interface OrderListProps {
   orders: Order[];
   title: string;
@@ -37,6 +44,7 @@ const OrderList: React.FC<OrderListProps> = ({
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [driverId, setDriverId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
 
   // Cleanup function for socket subscription
   const [cleanupSubscription, setCleanupSubscription] = useState<(() => void) | null>(null);
@@ -142,6 +150,18 @@ const OrderList: React.FC<OrderListProps> = ({
     });
   };
 
+  const toggleOrderDetails = (orderId: string) => {
+    setExpandedOrders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId);
+      } else {
+        newSet.add(orderId);
+      }
+      return newSet;
+    });
+  };
+
   if (orders.length === 0) {
     return (
       <div className="text-center py-12">
@@ -155,114 +175,152 @@ const OrderList: React.FC<OrderListProps> = ({
       {title && <h2 className="text-2xl font-bold">{title}</h2>}
       <div className="grid gap-6">
         {orders.map((order) => (
-          <div key={order.id} className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold">Orden #{order.id}</h3>
-                  <span className="text-sm text-gray-500">
-                    ({order.tracking_number})
-                  </span>
+          <div key={order.id} className="bg-white rounded-lg shadow">
+            <div 
+              className="p-6 cursor-pointer hover:bg-gray-50"
+              onClick={() => toggleOrderDetails(order.id)}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">Orden #{order.tracking_number}</h3>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        statusColors[order.status]
+                      }`}
+                    >
+                      {statusLabels[order.status]}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Creada el {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                  {order.driverInfo && (
+                    <div className="mt-2 text-sm">
+                      <span className="font-medium text-gray-700">Transportador: </span>
+                      <span className="text-gray-600">{order.driverInfo.full_name}</span>
+                      <span className="text-gray-400 ml-2">({order.driverInfo.email})</span>
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm text-gray-500">
-                  Creada el {new Date(order.created_at).toLocaleDateString()}
-                </p>
-                {order.driverInfo && (
-                  <div className="mt-2 text-sm">
-                    <span className="font-medium text-gray-700">Transportador: </span>
-                    <span className="text-gray-600">{order.driverInfo.full_name}</span>
-                    <span className="text-gray-400 ml-2">({order.driverInfo.email})</span>
+                <div className="flex items-center gap-4">
+                  {user?.role === 'admin' && order.status === 'PENDING' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAssignOrder(order.id);
+                      }}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      Asignar
+                    </button>
+                  )}
+                  {showStatusUpdateButton && getNextStatus(order.status) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusUpdate(order);
+                      }}
+                      className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      Actualizar Estado
+                    </button>
+                  )}
+                  {user?.role === 'user' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewHistory(order);
+                      }}
+                      className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                    >
+                      Ver Historial
+                    </button>
+                  )}
+                  <button
+                    className="text-gray-400 hover:text-gray-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleOrderDetails(order.id);
+                    }}
+                  >
+                    <svg
+                      className={`w-5 h-5 transform transition-transform ${
+                        expandedOrders.has(order.id) ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {expandedOrders.has(order.id) && (
+              <div className="border-t px-6 py-4 bg-gray-50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Origen</p>
+                    <p className="mt-1">{order.origin}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Destino</p>
+                    <p className="mt-1">{order.destination}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Ciudad de Destino</p>
+                    <p className="mt-1">{order.destination_city}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Código Postal</p>
+                    <p className="mt-1">{order.destination_zipcode}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Peso</p>
+                    <p className="mt-1">{order.weight} kg</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Dimensiones</p>
+                    <p className="mt-1">
+                      {order.width}x{order.height}x{order.length} cm
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Tipo</p>
+                    <p className="mt-1">{order.product_type}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Frágil</p>
+                    <p className="mt-1">{order.is_fragile ? 'Sí' : 'No'}</p>
+                  </div>
+                </div>
+
+                {order.special_instructions && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-500">Instrucciones Especiales</p>
+                    <p className="mt-1 text-gray-700">{order.special_instructions}</p>
                   </div>
                 )}
-              </div>
-              <div className="flex items-center gap-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    statusColors[order.status]
-                  }`}
-                >
-                  {order.status}
-                </span>
-                {user?.role === 'admin' && order.status === 'PENDING' && (
-                  <button
-                    onClick={() => handleAssignOrder(order.id)}
-                    className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Asignar
-                  </button>
+
+                {order.estimated_delivery_date && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-500">Fecha Estimada de Entrega</p>
+                    <p className="mt-1 text-gray-700">
+                      {new Date(order.estimated_delivery_date).toLocaleDateString()}
+                    </p>
+                  </div>
                 )}
-                {showStatusUpdateButton && getNextStatus(order.status) && (
-                  <button
-                    onClick={() => handleStatusUpdate(order)}
-                    className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                  >
-                    Actualizar Estado
-                  </button>
-                )}
-                {user?.role === 'user' && (
-                  <button
-                    onClick={() => handleViewHistory(order)}
-                    className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-                  >
-                    Ver Historial
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Origen</p>
-                <p className="mt-1">{order.origin}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Destino</p>
-                <p className="mt-1">{order.destination}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Ciudad de Destino</p>
-                <p className="mt-1">{order.destination_city}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Código Postal</p>
-                <p className="mt-1">{order.destination_zipcode}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Peso</p>
-                <p className="mt-1">{order.weight} kg</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Dimensiones</p>
-                <p className="mt-1">
-                  {order.width}x{order.height}x{order.length} cm
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Tipo</p>
-                <p className="mt-1">{order.product_type}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Frágil</p>
-                <p className="mt-1">{order.is_fragile ? 'Sí' : 'No'}</p>
-              </div>
-            </div>
-
-            {order.special_instructions && (
-              <div className="mt-4">
-                <p className="text-sm font-medium text-gray-500">Instrucciones Especiales</p>
-                <p className="mt-1 text-gray-700">{order.special_instructions}</p>
-              </div>
-            )}
-
-            {order.estimated_delivery_date && (
-              <div className="mt-4">
-                <p className="text-sm font-medium text-gray-500">Fecha Estimada de Entrega</p>
-                <p className="mt-1 text-gray-700">
-                  {new Date(order.estimated_delivery_date).toLocaleDateString()}
-                </p>
               </div>
             )}
           </div>
@@ -328,7 +386,7 @@ const OrderList: React.FC<OrderListProps> = ({
         <div className="space-y-4">
           <div className="text-sm text-gray-600">
             <p>Número de seguimiento: {selectedOrder?.tracking_number}</p>
-            <p>Estado actual: {selectedOrder?.status}</p>
+            <p>Estado actual: {selectedOrder && statusLabels[selectedOrder.status]}</p>
             <p>Fecha de creación: {selectedOrder && formatDate(selectedOrder.created_at)}</p>
             {selectedOrder?.driverInfo && (
               <p>Transportador asignado: {selectedOrder.driverInfo.full_name}</p>
@@ -351,7 +409,7 @@ const OrderList: React.FC<OrderListProps> = ({
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-medium text-gray-900">{event.status}</p>
+                        <p className="font-medium text-gray-900">{statusLabels[event.status as OrderStatus]}</p>
                         <p className="text-sm text-gray-600">{event.notes}</p>
                         {event.is_recent && (
                           <span className="inline-flex items-center px-2 py-1 mt-1 rounded-full text-xs font-medium bg-green-100 text-green-800">

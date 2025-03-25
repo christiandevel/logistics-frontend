@@ -53,17 +53,9 @@ const AdminOrders: React.FC = () => {
           >
             <option value="ALL">Todos los Estados</option>
             <option value="PENDING">Pendientes</option>
-            <option value="PICKED_UP">Recogidos</option>
-            <option value="IN_TRANSIT">En Tránsito</option>
+            <option value="PICKED_UP">En Tránsito</option>
             <option value="DELIVERED">Entregados</option>
-            <option value="CANCELLED">Cancelados</option>
           </select>
-          <button
-            onClick={fetchOrders}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Actualizar Lista
-          </button>
         </div>
       </div>
 
