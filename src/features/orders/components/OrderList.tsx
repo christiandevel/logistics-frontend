@@ -5,6 +5,7 @@ import { Order, OrderHistory } from '../types/order.types';
 import Modal from '../../../components/ui/Modal';
 import { showToast } from '../../../components/ui/Toast';
 import { orderService, OrderStatus } from '../services/order.service';
+import { userService, User } from '../../users/services/user.service';
 
 const statusColors: Record<OrderStatus, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
@@ -18,6 +19,20 @@ const statusLabels: Record<OrderStatus, string> = {
   PICKED_UP: 'Recogido',
   DELIVERED: 'Entregado',
   ALL: 'Todos',
+};
+
+const productTypeLabels: Record<string, string> = {
+  electronic: 'Electrónico',
+  food: 'Alimentos',
+  medicine: 'Medicamentos',
+  other: 'Otro'
+};
+
+const historyMessageLabels: Record<string, string> = {
+  // Aquí se irán agregando más traducciones según se necesiten
+  'Shipment created': 'Orden creada',
+  'Driver assigned': 'Conductor asignado',
+  'Status changed from PENDING to PICKED_UP': 'Estado actualizado a Recogido',
 };
 
 interface OrderListProps {
@@ -45,6 +60,8 @@ const OrderList: React.FC<OrderListProps> = ({
   const [driverId, setDriverId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+  const [drivers, setDrivers] = useState<User[]>([]);
+  const [isLoadingDrivers, setIsLoadingDrivers] = useState(false);
 
   // Cleanup function for socket subscription
   const [cleanupSubscription, setCleanupSubscription] = useState<(() => void) | null>(null);
@@ -58,9 +75,18 @@ const OrderList: React.FC<OrderListProps> = ({
     };
   }, [cleanupSubscription]);
 
-  const handleAssignOrder = (orderId: string) => {
+  const handleAssignOrder = async (orderId: string) => {
     setSelectedOrderId(orderId);
     setIsModalOpen(true);
+    setIsLoadingDrivers(true);
+    try {
+      const driversList = await userService.getDrivers();
+      setDrivers(driversList);
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error al cargar los conductores', 'error');
+    } finally {
+      setIsLoadingDrivers(false);
+    }
   };
 
   const handleViewHistory = async (order: Order) => {
@@ -298,7 +324,7 @@ const OrderList: React.FC<OrderListProps> = ({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Tipo</p>
-                    <p className="mt-1">{order.product_type}</p>
+                    <p className="mt-1">{productTypeLabels[order.product_type] || order.product_type}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Frágil</p>
@@ -338,15 +364,27 @@ const OrderList: React.FC<OrderListProps> = ({
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              ID del Transportador
+              Seleccionar Conductor
             </label>
-            <input
-              type="text"
-              value={driverId}
-              onChange={(e) => setDriverId(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Ingrese el ID del transportador"
-            />
+            {isLoadingDrivers ? (
+              <div className="mt-1 flex justify-center py-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+              </div>
+            ) : (
+              <select
+                value={driverId}
+                onChange={(e) => setDriverId(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                disabled={isLoadingDrivers}
+              >
+                <option value="">Seleccione un conductor</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.full_name} ({driver.email})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <button
@@ -410,7 +448,9 @@ const OrderList: React.FC<OrderListProps> = ({
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium text-gray-900">{statusLabels[event.status as OrderStatus]}</p>
-                        <p className="text-sm text-gray-600">{event.notes}</p>
+                        <p className="text-sm text-gray-600">
+                          {historyMessageLabels[event.notes] || event.notes}
+                        </p>
                         {event.is_recent && (
                           <span className="inline-flex items-center px-2 py-1 mt-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <span className="animate-pulse mr-1">●</span>
