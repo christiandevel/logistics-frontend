@@ -32,8 +32,6 @@ const DashboardLayout: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  console.log('isAuthenticated', isAuthenticated);
-  console.log('user', user);
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" />;
   }
