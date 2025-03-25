@@ -15,31 +15,66 @@ const productTypeLabels: Record<ProductType, string> = {
   other: 'Otro'
 };
 
+// Expresiones regulares para validar direcciones colombianas
+const addressRegex = /^[A-Za-z0-9\s#-]+$/;
+const streetNumberRegex = /^[0-9]+[A-Za-z]?$/;
+const apartmentRegex = /^[0-9]+[A-Za-z]?$/;
+
 const createOrderSchema = z.object({
-  origin: z.string().min(1, 'La dirección de origen es requerida'),
-  destination: z.string().min(1, 'La dirección de destino es requerida'),
-  destinationZipcode: z.string().min(5, 'El código postal debe tener al menos 5 caracteres'),
-  destinationCity: z.string().min(1, 'La ciudad de destino es requerida'),
+  origin: z.string()
+    .min(1, 'La dirección de origen es requerida')
+    .regex(addressRegex, 'La dirección solo puede contener letras, números, espacios, # y -')
+    .refine((val) => {
+      // Verificar que la dirección tenga al menos un número
+      return /\d/.test(val);
+    }, 'La dirección debe incluir un número')
+    .refine((val) => {
+      // Verificar que la dirección tenga al menos una letra
+      return /[A-Za-z]/.test(val);
+    }, 'La dirección debe incluir el nombre de la calle o avenida'),
+  destination: z.string()
+    .min(1, 'La dirección de destino es requerida')
+    .regex(addressRegex, 'La dirección solo puede contener letras, números, espacios, # y -')
+    .refine((val) => {
+      // Verificar que la dirección tenga al menos un número
+      return /\d/.test(val);
+    }, 'La dirección debe incluir un número')
+    .refine((val) => {
+      // Verificar que la dirección tenga al menos una letra
+      return /[A-Za-z]/.test(val);
+    }, 'La dirección debe incluir el nombre de la calle o avenida'),
+  destinationZipcode: z.string()
+    .min(5, 'El código postal debe tener al menos 5 caracteres')
+    .max(6, 'El código postal no puede tener más de 6 caracteres')
+    .regex(/^[0-9]+$/, 'El código postal solo puede contener números'),
+  destinationCity: z.string()
+    .min(1, 'La ciudad de destino es requerida')
+    .regex(/^[A-Za-z\s]+$/, 'La ciudad solo puede contener letras y espacios')
+    .min(2, 'La ciudad debe tener al menos 2 caracteres'),
   weight: z.string()
     .min(1, 'El peso es requerido')
     .transform((val) => Number(val))
     .refine((val) => !isNaN(val), 'Por favor, ingrese un número válido')
-    .refine((val) => val > 0, 'El peso debe ser mayor a 0'),
+    .refine((val) => val > 0, 'El peso debe ser mayor a 0')
+    .refine((val) => val <= 1000, 'El peso no puede exceder los 1000 kg'),
   width: z.string()
     .min(1, 'El ancho es requerido')
     .transform((val) => Number(val))
     .refine((val) => !isNaN(val), 'Por favor, ingrese un número válido')
-    .refine((val) => val > 0, 'El ancho debe ser mayor a 0'),
+    .refine((val) => val > 0, 'El ancho debe ser mayor a 0')
+    .refine((val) => val <= 300, 'El ancho no puede exceder los 300 cm'),
   height: z.string()
     .min(1, 'La altura es requerida')
     .transform((val) => Number(val))
     .refine((val) => !isNaN(val), 'Por favor, ingrese un número válido')
-    .refine((val) => val > 0, 'La altura debe ser mayor a 0'),
+    .refine((val) => val > 0, 'La altura debe ser mayor a 0')
+    .refine((val) => val <= 300, 'La altura no puede exceder los 300 cm'),
   length: z.string()
     .min(1, 'El largo es requerido')
     .transform((val) => Number(val))
     .refine((val) => !isNaN(val), 'Por favor, ingrese un número válido')
-    .refine((val) => val > 0, 'El largo debe ser mayor a 0'),
+    .refine((val) => val > 0, 'El largo debe ser mayor a 0')
+    .refine((val) => val <= 300, 'El largo no puede exceder los 300 cm'),
   productType: z.enum(productTypes),
   isFragile: z.boolean(),
   specialInstructions: z.string().optional(),
