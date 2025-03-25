@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { orderService } from '../services/order.service';
+import { orderService, OrderStatus } from '../services/order.service';
 import { ShipmentStatistics } from '../types/order.types';
 import { showToast } from '../../../components/ui/Toast';
+
+const statusLabels: Record<OrderStatus, string> = {
+  PENDING: 'Pendiente',
+  PICKED_UP: 'Recogido',
+  DELIVERED: 'Entregado',
+  ALL: 'Todos',
+};
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const months = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ];
+  return `${date.getDate()} de ${months[date.getMonth()]} del ${date.getFullYear()}`;
+};
 
 const AdminStatistics: React.FC = () => {
   const [statistics, setStatistics] = useState<ShipmentStatistics | null>(null);
@@ -75,7 +91,7 @@ const AdminStatistics: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {Object.entries(statistics.statusCounts).map(([status, count]) => (
             <div key={status} className="text-center">
-              <p className="text-sm text-gray-500">{status}</p>
+              <p className="text-sm text-gray-500">{statusLabels[status as OrderStatus]}</p>
               <p className="text-xl font-semibold">{count}</p>
             </div>
           ))}
@@ -100,7 +116,7 @@ const AdminStatistics: React.FC = () => {
           <div className="space-y-2">
             {statistics.shipmentsByDate.map((item) => (
               <div key={item.date} className="flex justify-between items-center">
-                <span className="text-gray-600">{new Date(item.date).toLocaleDateString()}</span>
+                <span className="text-gray-600">{formatDate(item.date)}</span>
                 <span className="font-semibold">{item.count}</span>
               </div>
             ))}
