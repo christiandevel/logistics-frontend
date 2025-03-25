@@ -1,54 +1,151 @@
-# React + TypeScript + Vite
+# Logistics Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern web application for managing logistics operations, built with React and TypeScript. This system allows users to create, track, and manage delivery orders with real-time updates.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Authentication**: Secure login system with role-based access control
+- **Order Management**: Create, track, and manage delivery orders
+- **Real-time Updates**: Live status updates for orders
+- **Role-based Interface**: Different views for admin, drivers, and regular users
+- **Responsive Design**: Mobile-friendly interface
+- **Form Validation**: Comprehensive input validation using Zod
+- **State Management**: Redux for global state management
+- **Type Safety**: Full TypeScript implementation
 
-## Expanding the ESLint configuration
+## Technology Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend Framework**: React 18
+- **Language**: TypeScript
+- **State Management**: Redux Toolkit
+- **Form Handling**: React Hook Form with Zod validation
+- **Styling**: Tailwind CSS
+- **Routing**: React Router v6
+- **HTTP Client**: Axios
+- **Real-time Updates**: Socket.IO
+- **UI Components**: Custom components with Tailwind CSS
+- **Code Quality**: ESLint, Prettier
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Prerequisites
+
+- Node.js (v14 or higher)
+- npm or yarn package manager
+- Git
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/logistics-frontend.git
+cd logistics-frontend
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
 ```
+
+3. Configure API endpoints:
+   The application uses a configuration file located at `src/config/api.js` to manage API endpoints and other configuration settings. You can modify the endpoints according to your backend setup:
+
+```javascript
+// src/config/api.js
+export const API_URL = 'your_api_url';
+```
+
+## Running the Project
+
+### Development Mode
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+The application will be available at `http://localhost:5173`
+
+### Production Build
+
+```bash
+npm run build
+# or
+yarn build
+```
+
+To preview the production build:
+```bash
+npm run preview
+# or
+yarn preview
+```
+
+## Project Structure
+
+```
+src/
+├── app/                    # App configuration and store setup
+├── components/            # Shared UI components
+├── config/               # Configuration files
+│   └── api.js           # API endpoints configuration
+├── features/             # Feature-based modules
+│   ├── auth/            # Authentication related components
+│   ├── dashboard/       # Dashboard components
+│   ├── orders/          # Order management components
+│   └── users/           # User management components
+├── services/            # API services
+├── types/               # TypeScript type definitions
+└── utils/              # Utility functions
+```
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+
+## User Roles
+
+The application supports three user roles:
+
+1. **Admin**
+   - View all orders
+   - Manage users
+   - Assign drivers to orders
+   - Update order status
+
+2. **Driver**
+   - View assigned orders
+   - Update order status
+   - View order history
+
+3. **User**
+   - Create new orders
+   - View their orders
+   - Track order status
+   - View order history
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [React](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+- [React Router](https://reactrouter.com/)
+- [Zod](https://zod.dev/)
