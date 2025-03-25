@@ -11,7 +11,7 @@ const statusColors: Record<OrderStatus, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
   PICKED_UP: 'bg-purple-100 text-purple-800',
   DELIVERED: 'bg-green-100 text-green-800',
-  ALL: '', // Este estado no se usa para mostrar colores
+  ALL: 'bg-gray-100 text-gray-800' // Color para el estado de filtrado 'ALL'
 };
 
 const statusLabels: Record<OrderStatus, string> = {

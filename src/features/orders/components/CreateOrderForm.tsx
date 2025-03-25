@@ -17,8 +17,6 @@ const productTypeLabels: Record<ProductType, string> = {
 
 // Expresiones regulares para validar direcciones colombianas
 const addressRegex = /^[A-Za-z0-9\s#-]+$/;
-const streetNumberRegex = /^[0-9]+[A-Za-z]?$/;
-const apartmentRegex = /^[0-9]+[A-Za-z]?$/;
 
 const createOrderSchema = z.object({
   origin: z.string()
