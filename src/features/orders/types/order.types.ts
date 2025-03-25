@@ -50,4 +50,13 @@ export interface CreateOrderResponse {
   id: string;
   status: string;
   message: string;
+}
+
+export interface OrderHistory {
+  id: number;
+  shipment_id: number;
+  user_id: number;
+  status: string;
+  notes: string;
+  created_at: string;
 } 

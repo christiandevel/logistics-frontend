@@ -1,5 +1,5 @@
 import api from '../../../app/api';
-import { CreateOrderRequest, CreateOrderResponse, Order } from '../types/order.types';
+import { CreateOrderRequest, CreateOrderResponse, Order, OrderHistory } from '../types/order.types';
 
 export type OrderStatus = 'PENDING' | 'PICKED_UP'  | 'DELIVERED' | 'ALL';
 
@@ -32,6 +32,11 @@ export const orderService = {
 
   updateOrderStatus: async (orderId: string, status: Exclude<OrderStatus, 'ALL'>): Promise<Order> => {
     const response = await api.put(`/shipments/${orderId}/status`, { status: status.toLowerCase() });
+    return response.data;
+  },
+
+  getOrderHistory: async (orderId: string): Promise<OrderHistory[]> => {
+    const response = await api.get(`/shipments/${orderId}/history`);
     return response.data;
   },
 }; 

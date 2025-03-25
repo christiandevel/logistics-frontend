@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../app/store';
-import { Order } from '../types/order.types';
+import { Order, OrderHistory } from '../types/order.types';
 import Modal from '../../../components/ui/Modal';
 import { showToast } from '../../../components/ui/Toast';
 import { orderService, OrderStatus } from '../services/order.service';
@@ -33,6 +33,8 @@ const OrderList: React.FC<OrderListProps> = ({
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderHistory, setOrderHistory] = useState<OrderHistory[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [driverId, setDriverId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,9 +43,19 @@ const OrderList: React.FC<OrderListProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleViewHistory = (order: Order) => {
+  const handleViewHistory = async (order: Order) => {
     setSelectedOrder(order);
     setIsHistoryModalOpen(true);
+    setIsLoadingHistory(true);
+
+    try {
+      const history = await orderService.getOrderHistory(order.id);
+      setOrderHistory(history);
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error al cargar el historial', 'error');
+    } finally {
+      setIsLoadingHistory(false);
+    }
   };
 
   const handleSubmitAssignment = async () => {
@@ -87,6 +99,17 @@ const OrderList: React.FC<OrderListProps> = ({
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Error al actualizar el estado', 'error');
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (orders.length === 0) {
@@ -264,6 +287,7 @@ const OrderList: React.FC<OrderListProps> = ({
         onClose={() => {
           setIsHistoryModalOpen(false);
           setSelectedOrder(null);
+          setOrderHistory([]);
         }}
         title={`Historial de Orden #${selectedOrder?.id}`}
       >
@@ -271,18 +295,44 @@ const OrderList: React.FC<OrderListProps> = ({
           <div className="text-sm text-gray-600">
             <p>Número de seguimiento: {selectedOrder?.tracking_number}</p>
             <p>Estado actual: {selectedOrder?.status}</p>
-            <p>Fecha de creación: {selectedOrder && new Date(selectedOrder.created_at).toLocaleDateString()}</p>
+            <p>Fecha de creación: {selectedOrder && formatDate(selectedOrder.created_at)}</p>
             {selectedOrder?.driverInfo && (
               <p>Transportador asignado: {selectedOrder.driverInfo.full_name}</p>
             )}
           </div>
           <div className="border-t pt-4">
             <h4 className="font-medium mb-2">Historial de Estados</h4>
-            <p className="text-sm text-gray-500">El historial de estados estará disponible próximamente.</p>
+            {isLoadingHistory ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            ) : orderHistory.length > 0 ? (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {orderHistory.map((event) => (
+                  <div key={event.id} className="border-l-4 border-blue-500 pl-4 py-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium text-gray-900">{event.status}</p>
+                        <p className="text-sm text-gray-600">{event.notes}</p>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {formatDate(event.created_at)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No hay registros en el historial.</p>
+            )}
           </div>
           <div className="flex justify-end">
             <button
-              onClick={() => setIsHistoryModalOpen(false)}
+              onClick={() => {
+                setIsHistoryModalOpen(false);
+                setSelectedOrder(null);
+                setOrderHistory([]);
+              }}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
             >
               Cerrar
