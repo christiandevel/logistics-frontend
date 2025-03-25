@@ -8,15 +8,38 @@ import { showToast } from '../../../components/ui/Toast';
 
 const productTypes = ["electronic", "food", "medicine", "other"] as const;
 
+const productTypeLabels: Record<ProductType, string> = {
+  electronic: 'Electrónico',
+  food: 'Alimentos',
+  medicine: 'Medicamentos',
+  other: 'Otro'
+};
+
 const createOrderSchema = z.object({
   origin: z.string().min(1, 'La dirección de origen es requerida'),
   destination: z.string().min(1, 'La dirección de destino es requerida'),
   destinationZipcode: z.string().min(5, 'El código postal debe tener al menos 5 caracteres'),
   destinationCity: z.string().min(1, 'La ciudad de destino es requerida'),
-  weight: z.number().min(0.1, 'El peso debe ser mayor a 0'),
-  width: z.number().min(1, 'El ancho debe ser mayor a 0'),
-  height: z.number().min(1, 'La altura debe ser mayor a 0'),
-  length: z.number().min(1, 'El largo debe ser mayor a 0'),
+  weight: z.string()
+    .min(1, 'El peso es requerido')
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val), 'Por favor, ingrese un número válido')
+    .refine((val) => val > 0, 'El peso debe ser mayor a 0'),
+  width: z.string()
+    .min(1, 'El ancho es requerido')
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val), 'Por favor, ingrese un número válido')
+    .refine((val) => val > 0, 'El ancho debe ser mayor a 0'),
+  height: z.string()
+    .min(1, 'La altura es requerida')
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val), 'Por favor, ingrese un número válido')
+    .refine((val) => val > 0, 'La altura debe ser mayor a 0'),
+  length: z.string()
+    .min(1, 'El largo es requerido')
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val), 'Por favor, ingrese un número válido')
+    .refine((val) => val > 0, 'El largo debe ser mayor a 0'),
   productType: z.enum(productTypes),
   isFragile: z.boolean(),
   specialInstructions: z.string().optional(),
@@ -40,7 +63,14 @@ const CreateOrderForm: React.FC = () => {
 
   const onSubmit = async (data: CreateOrderFormData) => {
     try {
-      await orderService.createOrder(data as CreateOrderRequest);
+      const orderData: CreateOrderRequest = {
+        ...data,
+        weight: Number(data.weight),
+        width: Number(data.width),
+        height: Number(data.height),
+        length: Number(data.length),
+      };
+      await orderService.createOrder(orderData);
       showToast('Orden creada exitosamente', 'success');
       reset();
     } catch (error: any) {
@@ -49,7 +79,7 @@ const CreateOrderForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-6xl mx-auto">
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold mb-6">Crear Nueva Orden</h2>
 
@@ -60,7 +90,7 @@ const CreateOrderForm: React.FC = () => {
             <input
               type="text"
               {...register('origin')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="input-primary"
             />
             {errors.origin && (
               <p className="mt-1 text-sm text-red-600">{errors.origin.message}</p>
@@ -72,7 +102,7 @@ const CreateOrderForm: React.FC = () => {
             <input
               type="text"
               {...register('destination')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="input-primary"
             />
             {errors.destination && (
               <p className="mt-1 text-sm text-red-600">{errors.destination.message}</p>
@@ -87,7 +117,7 @@ const CreateOrderForm: React.FC = () => {
             <input
               type="text"
               {...register('destinationCity')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="input-primary"
             />
             {errors.destinationCity && (
               <p className="mt-1 text-sm text-red-600">{errors.destinationCity.message}</p>
@@ -99,7 +129,7 @@ const CreateOrderForm: React.FC = () => {
             <input
               type="text"
               {...register('destinationZipcode')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="input-primary"
             />
             {errors.destinationZipcode && (
               <p className="mt-1 text-sm text-red-600">{errors.destinationZipcode.message}</p>
@@ -114,8 +144,8 @@ const CreateOrderForm: React.FC = () => {
             <input
               type="number"
               step="0.1"
-              {...register('weight', { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              {...register('weight')}
+              className="input-primary"
             />
             {errors.weight && (
               <p className="mt-1 text-sm text-red-600">{errors.weight.message}</p>
@@ -126,8 +156,8 @@ const CreateOrderForm: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">Ancho (cm)</label>
             <input
               type="number"
-              {...register('width', { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              {...register('width')}
+              className="input-primary"
             />
             {errors.width && (
               <p className="mt-1 text-sm text-red-600">{errors.width.message}</p>
@@ -138,8 +168,8 @@ const CreateOrderForm: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">Alto (cm)</label>
             <input
               type="number"
-              {...register('height', { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              {...register('height')}
+              className="input-primary"
             />
             {errors.height && (
               <p className="mt-1 text-sm text-red-600">{errors.height.message}</p>
@@ -150,8 +180,8 @@ const CreateOrderForm: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">Largo (cm)</label>
             <input
               type="number"
-              {...register('length', { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              {...register('length')}
+              className="input-primary"
             />
             {errors.length && (
               <p className="mt-1 text-sm text-red-600">{errors.length.message}</p>
@@ -165,11 +195,11 @@ const CreateOrderForm: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">Tipo de Producto</label>
             <select
               {...register('productType')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="input-primary"
             >
               {productTypes.map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {productTypeLabels[type]}
                 </option>
               ))}
             </select>
@@ -198,7 +228,7 @@ const CreateOrderForm: React.FC = () => {
           <textarea
             {...register('specialInstructions')}
             rows={3}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="input-primary"
           />
           {errors.specialInstructions && (
             <p className="mt-1 text-sm text-red-600">{errors.specialInstructions.message}</p>
@@ -209,7 +239,7 @@ const CreateOrderForm: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            className="btn-primary"
           >
             {isSubmitting ? 'Creando...' : 'Crear Orden'}
           </button>
