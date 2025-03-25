@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface Order {
   id: string;
-  status: 'pending' | 'assigned' | 'in_transit' | 'delivered' | 'cancelled';
+  status: 'PENDING' | 'PICKED_UP'  | 'DELIVERED' ;
   pickupAddress: string;
   deliveryAddress: string;
   createdAt: string;

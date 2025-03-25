@@ -52,19 +52,19 @@ const AdminStatistics: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow flex flex-col justify-between items-start">
           <h3 className="text-lg font-semibold text-gray-700">Total de Envíos</h3>
           <p className="text-3xl font-bold text-blue-600">{statistics.totalShipments}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow flex flex-col justify-between items-start">
           <h3 className="text-lg font-semibold text-gray-700">Tiempo Promedio de Entrega</h3>
           <p className="text-3xl font-bold text-green-600">{statistics.averageDeliveryTime} días</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow flex flex-col justify-between items-start">
           <h3 className="text-lg font-semibold text-gray-700">En Tránsito</h3>
           <p className="text-3xl font-bold text-purple-600">{statistics.totalInTransit}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow flex flex-col justify-between items-start">
           <h3 className="text-lg font-semibold text-gray-700">Entregados</h3>
           <p className="text-3xl font-bold text-green-600">{statistics.totalDelivered}</p>
         </div>
