@@ -13,7 +13,6 @@ interface MenuItem {
 const menuByRole: Record<string, MenuItem[]> = {
   admin: [
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Asignar Rutas', path: '/dashboard/assign-routes' },
     { label: 'Gestionar Usuarios', path: '/dashboard/users' },
     { label: 'Ver Todas las Órdenes', path: '/dashboard/admin/orders' },
   ],
@@ -23,8 +22,8 @@ const menuByRole: Record<string, MenuItem[]> = {
   ],
   user: [
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Crear Orden', path: '/dashboard/create-order' },
     { label: 'Mis Órdenes', path: '/dashboard/my-orders' },
+    { label: 'Crear Orden', path: '/dashboard/create-order' },
   ],
 };
 
@@ -33,6 +32,8 @@ const DashboardLayout: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  console.log('isAuthenticated', isAuthenticated);
+  console.log('user', user);
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" />;
   }

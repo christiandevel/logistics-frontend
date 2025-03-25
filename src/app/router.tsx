@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { RootState } from './store';
+
 // Lazy loading de componentes
 const Login = React.lazy(() => import('../features/auth/pages/Login'));
 const Register = React.lazy(() => import('../features/auth/pages/Register'));
