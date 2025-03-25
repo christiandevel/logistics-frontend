@@ -30,13 +30,20 @@ const OrderList: React.FC<OrderListProps> = ({
 }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [driverId, setDriverId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAssignOrder = (orderId: string) => {
     setSelectedOrderId(orderId);
     setIsModalOpen(true);
+  };
+
+  const handleViewHistory = (order: Order) => {
+    setSelectedOrder(order);
+    setIsHistoryModalOpen(true);
   };
 
   const handleSubmitAssignment = async () => {
@@ -139,6 +146,14 @@ const OrderList: React.FC<OrderListProps> = ({
                     Actualizar Estado
                   </button>
                 )}
+                {user?.role === 'user' && (
+                  <button
+                    onClick={() => handleViewHistory(order)}
+                    className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                  >
+                    Ver Historial
+                  </button>
+                )}
               </div>
             </div>
 
@@ -239,6 +254,38 @@ const OrderList: React.FC<OrderListProps> = ({
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
               {isSubmitting ? 'Asignando...' : 'Asignar'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isHistoryModalOpen}
+        onClose={() => {
+          setIsHistoryModalOpen(false);
+          setSelectedOrder(null);
+        }}
+        title={`Historial de Orden #${selectedOrder?.id}`}
+      >
+        <div className="space-y-4">
+          <div className="text-sm text-gray-600">
+            <p>Número de seguimiento: {selectedOrder?.tracking_number}</p>
+            <p>Estado actual: {selectedOrder?.status}</p>
+            <p>Fecha de creación: {selectedOrder && new Date(selectedOrder.created_at).toLocaleDateString()}</p>
+            {selectedOrder?.driverInfo && (
+              <p>Transportador asignado: {selectedOrder.driverInfo.full_name}</p>
+            )}
+          </div>
+          <div className="border-t pt-4">
+            <h4 className="font-medium mb-2">Historial de Estados</h4>
+            <p className="text-sm text-gray-500">El historial de estados estará disponible próximamente.</p>
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsHistoryModalOpen(false)}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              Cerrar
             </button>
           </div>
         </div>
