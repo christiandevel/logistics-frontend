@@ -6,6 +6,16 @@ interface UserFormData {
   email: string;
   firstName: string;
   lastName: string;
+  password: string;
+  confirmPassword: string;
+}
+
+interface FormErrors {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  password?: string;
+  confirmPassword?: string;
 }
 
 const UserManagement: React.FC = () => {
@@ -15,7 +25,10 @@ const UserManagement: React.FC = () => {
     email: '',
     firstName: '',
     lastName: '',
+    password: '',
+    confirmPassword: '',
   });
+  const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     fetchDrivers();
@@ -32,15 +45,73 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    // Validar email
+    if (!formData.email) {
+      newErrors.email = 'El email es requerido';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'El email no es válido';
+    }
+
+    // Validar nombre
+    if (!formData.firstName) {
+      newErrors.firstName = 'El nombre es requerido';
+    }
+
+    // Validar apellido
+    if (!formData.lastName) {
+      newErrors.lastName = 'El apellido es requerido';
+    }
+
+    // Validar contraseña
+    if (!formData.password) {
+      newErrors.password = 'La contraseña es requerida';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = 'La contraseña debe contener al menos una mayúscula, una minúscula y un número';
+    }
+
+    // Validar confirmación de contraseña
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'La confirmación de contraseña es requerida';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     try {
-      await userService.createDriver(formData);
-      toast.success('Conductor creado exitosamente');
-      setFormData({ email: '', firstName: '', lastName: '' });
+      const response = await userService.createDriver({
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        password: formData.password,
+      });
+      
+      toast.success(response.message || 'Conductor creado exitosamente');
+      setFormData({
+        email: '',
+        firstName: '',
+        lastName: '',
+        password: '',
+        confirmPassword: '',
+      });
+      setErrors({});
       fetchDrivers();
-    } catch (error) {
-      toast.error('Error al crear el conductor');
+    } catch (error: any) {
+      toast.error(error.message || 'Error al crear el conductor');
     }
   };
 
@@ -50,6 +121,13 @@ const UserManagement: React.FC = () => {
       ...prev,
       [name]: value
     }));
+    // Limpiar error del campo cuando el usuario empieza a escribir
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   return (
@@ -70,9 +148,13 @@ const UserManagement: React.FC = () => {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  ${errors.firstName ? 'border-red-500' : 'border-gray-300'}`}
                 required
               />
+              {errors.firstName && (
+                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+              )}
             </div>
 
             <div>
@@ -85,9 +167,13 @@ const UserManagement: React.FC = () => {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  ${errors.lastName ? 'border-red-500' : 'border-gray-300'}`}
                 required
               />
+              {errors.lastName && (
+                <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+              )}
             </div>
 
             <div>
@@ -100,9 +186,51 @@ const UserManagement: React.FC = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                 required
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                required
+              />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Confirmar Contraseña
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
+                required
+              />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
             </div>
           </div>
 

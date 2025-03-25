@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { API_URL } from '../../../config/api';
 
 export interface User {
@@ -12,6 +12,20 @@ export interface User {
   confirmation_expires_at: string | null;
   reset_password_token: string | null;
   reset_password_expires_at: string | null;
+}
+
+interface RegisterResponse {
+  message: string;
+  user: User;
+}
+
+interface RegisterError {
+  message: string;
+  errors?: {
+    email?: string[];
+    password?: string[];
+    full_name?: string[];
+  };
 }
 
 class UserService {
@@ -35,13 +49,16 @@ class UserService {
     email: string;
     firstName: string;
     lastName: string;
-  }): Promise<User> {
+    password: string;
+  }): Promise<RegisterResponse> {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/driver`,
+        `${API_URL}/auth/register`,
         {
           email: userData.email,
           full_name: `${userData.firstName} ${userData.lastName}`,
+          role: 'driver',
+          password: userData.password,
         },
         {
           headers: {
@@ -51,8 +68,13 @@ class UserService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error creating driver:', error);
-      throw error;
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<RegisterError>;
+        if (axiosError.response?.data) {
+          throw new Error(axiosError.response.data.message || 'Error al crear el conductor');
+        }
+      }
+      throw new Error('Error al crear el conductor');
     }
   }
 }
