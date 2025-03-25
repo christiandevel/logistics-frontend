@@ -183,6 +183,9 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.loginStatus = null;
+      state.error = null;
+      localStorage.removeItem('token');
     },
     resetRegisterState: (state) => {
       state.register.isSuccess = false;

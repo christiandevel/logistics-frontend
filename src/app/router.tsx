@@ -1,7 +1,8 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { store } from './store';
+import { useSelector } from 'react-redux';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { RootState } from './store';
 
 // Lazy loading de componentes
 const Login = React.lazy(() => import('../features/auth/pages/Login'));
@@ -10,10 +11,12 @@ const ForgotPassword = React.lazy(() => import('../features/auth/pages/ForgotPas
 const ConfirmEmail = React.lazy(() => import('../features/auth/components/ConfirmEmail'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 const ResetFirstPassword = React.lazy(() => import('../features/auth/pages/ResetFirstPassword'));
+const DashboardLayout = React.lazy(() => import('../features/dashboard/components/DashboardLayout'));
+const Dashboard = React.lazy(() => import('../features/dashboard/components/Dashboard'));
 
 // Componente de protección de rutas
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
-  const { isAuthenticated, user } = store.getState().auth;
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -27,10 +30,6 @@ const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?
 };
 
 export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />,
-  },
   {
     path: '/login',
     element: (
@@ -48,18 +47,18 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/forgot-password',
-    element: (
-      <React.Suspense fallback={<LoadingSpinner />}>
-        <ForgotPassword />
-      </React.Suspense>
-    ),
-  },
-  {
     path: '/confirm-email',
     element: (
       <React.Suspense fallback={<LoadingSpinner />}>
         <ConfirmEmail />
+      </React.Suspense>
+    ),
+  },
+  {
+    path: '/forgot-password',
+    element: (
+      <React.Suspense fallback={<LoadingSpinner />}>
+        <ForgotPassword />
       </React.Suspense>
     ),
   },
@@ -78,5 +77,61 @@ export const router = createBrowserRouter([
         <ResetFirstPassword />
       </React.Suspense>
     ),
+  },
+  {
+    path: '/dashboard',
+    element: (
+      <ProtectedRoute>
+        <React.Suspense fallback={<LoadingSpinner />}>
+          <DashboardLayout />
+        </React.Suspense>
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: (
+          <React.Suspense fallback={<LoadingSpinner />}>
+            <Dashboard />
+          </React.Suspense>
+        ),
+      },
+      {
+        path: 'users',
+        element: (
+          <ProtectedRoute roles={['admin']}>
+            <div>Gestión de Usuarios</div>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'assign-routes',
+        element: (
+          <ProtectedRoute roles={['admin']}>
+            <div>Asignación de Rutas</div>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'my-orders',
+        element: (
+          <ProtectedRoute roles={['driver', 'user']}>
+            <div>Mis Órdenes</div>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'create-order',
+        element: (
+          <ProtectedRoute roles={['user']}>
+            <div>Crear Orden</div>
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+  {
+    path: '/',
+    element: <Navigate to="/dashboard" replace />,
   },
 ]);
