@@ -13,8 +13,8 @@ interface MenuItem {
 const menuByRole: Record<string, MenuItem[]> = {
   admin: [
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Gestionar Usuarios', path: '/dashboard/users' },
     { label: 'Ver Todas las Órdenes', path: '/dashboard/admin/orders' },
+    { label: 'Gestionar Usuarios', path: '/dashboard/users' },
   ],
   driver: [
     { label: 'Dashboard', path: '/dashboard' },

@@ -18,6 +18,7 @@ const UserOrders = React.lazy(() => import('../features/orders/components/UserOr
 const AdminOrders = React.lazy(() => import('../features/orders/components/AdminOrders'));
 const DriverOrders = React.lazy(() => import('../features/orders/components/DriverOrders'));
 const OrdersContainer = React.lazy(() => import('../features/orders/components/OrdersContainer'));
+const UserManagement = React.lazy(() => import('../features/users/components/UserManagement'));
 
 // Componente de protección de rutas
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -105,15 +106,9 @@ export const router = createBrowserRouter([
         path: 'users',
         element: (
           <ProtectedRoute roles={['admin']}>
-            <div>Gestión de Usuarios</div>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'assign-routes',
-        element: (
-          <ProtectedRoute roles={['admin']}>
-            <div>Asignación de Rutas</div>
+            <React.Suspense fallback={<LoadingSpinner />}>
+              <UserManagement />
+            </React.Suspense>
           </ProtectedRoute>
         ),
       },
