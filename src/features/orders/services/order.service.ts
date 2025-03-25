@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import api from '../../../app/api';
-import { CreateOrderRequest, Order, OrderHistory } from '../types/order.types';
+import { CreateOrderRequest, Order, OrderHistory, StatisticsResponse } from '../types/order.types';
 
 export type OrderStatus = 'PENDING' | 'PICKED_UP'  | 'DELIVERED' | 'ALL';
 
@@ -15,9 +15,8 @@ export const orderService = {
     return response.data;
   },
 
-  getAllOrders: async (status?: OrderStatus): Promise<Order[]> => {
-    const params = status && status !== 'ALL' ? { status } : undefined;
-    const response = await api.get('/shipments', { params });
+  getAllOrders: async (): Promise<Order[]> => {
+    const response = await api.get('/shipments');
     return response.data;
   },
 
@@ -41,7 +40,7 @@ export const orderService = {
     return response.data;
   },
   
-  suscribeToOrderUpdates: async (orderId: string, callback: (update: OrderHistory) => void) => {
+  subscribeToOrderUpdates: (orderId: string, callback: (update: OrderHistory) => void) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
     const token = localStorage.getItem('token');
     
@@ -49,7 +48,6 @@ export const orderService = {
       console.error('No se encontró el token en el localStorage');
       return () => {};
     }
-    
     
     const socket: Socket = io(backendUrl, {
       path: '/socket.io',
@@ -61,16 +59,46 @@ export const orderService = {
     });
     
     socket.on('connect', () => {
-      console.log('Conectado con SocketIO');
+      console.log('✅ Conectado con SocketIO');
+      socket.emit('join:order', { orderId });
+      console.log(`👥 Suscrito a actualizaciones de la orden ${orderId}`);
     });
     
     socket.on('disconnect', () => {
-      console.log('Desconectado con SocketIO');
+      console.log('❌ Desconectado de SocketIO');
     });
     
     socket.on('connect_error', (error) => {
-      console.error('Error de conexión con SocketIO', error);
+      console.error('🚨 Error de conexión con SocketIO:', error.message);
     });
-    
+
+    socket.on('shipment:statusChanged', (data) => {
+      console.log('📦 Actualización de estado recibida:', data);
+      if (data.shipment.id.toString() === orderId) {
+        // Crear un nuevo evento de historial con los datos recibidos
+        const historyEvent: OrderHistory = {
+          id: Date.now(), // ID temporal para el nuevo evento
+          shipment_id: data.shipment.id,
+          status: data.shipment.status.toUpperCase(),
+          notes: `Estado actualizado a ${data.shipment.status.toUpperCase()}`,
+          created_at: new Date().toISOString(),
+          is_recent: true, // Marcar como actualización reciente
+          user_id: 0, // Asegurarse de incluir user_id
+        };
+        callback(historyEvent);
+      }
+    });
+
+    return () => {
+      console.log(`👋 Cancelando suscripción a la orden ${orderId}`);
+      socket.off('shipment:statusChanged');
+      socket.emit('leave:order', { orderId });
+      socket.disconnect();
+    };
+  },
+
+  getShipmentStatistics: async (): Promise<StatisticsResponse> => {
+    const response = await api.get('/shipments/statistics');
+    return response.data;
   }
 }; 

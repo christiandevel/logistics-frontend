@@ -59,4 +59,38 @@ export interface OrderHistory {
   status: string;
   notes: string;
   created_at: string;
+  is_recent?: boolean;
+}
+
+export interface ShipmentByCity {
+  city: string;
+  count: number;
+}
+
+export interface ShipmentByDate {
+  date: string;
+  count: number;
+}
+
+export interface ShipmentStatistics {
+  totalShipments: number;
+  statusCounts: {
+    PENDING: number;
+    PICKED_UP: number;
+    IN_TRANSIT: number;
+    DELIVERED: number;
+    CANCELLED: number;
+  };
+  averageDeliveryTime: number;
+  totalDelivered: number;
+  totalInTransit: number;
+  totalPending: number;
+  totalCancelled: number;
+  shipmentsByCity: ShipmentByCity[];
+  shipmentsByDate: ShipmentByDate[];
+}
+
+export interface StatisticsResponse {
+  success: boolean;
+  data: ShipmentStatistics;
 } 

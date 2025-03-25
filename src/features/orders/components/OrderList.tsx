@@ -62,16 +62,25 @@ const OrderList: React.FC<OrderListProps> = ({
 
     try {
       const history = await orderService.getOrderHistory(order.id);
-      setOrderHistory(history);
-      
-  
-      const unsubscribe = orderService.suscribeToOrderUpdates(order.id.toString(), (update) => {
-        setOrderHistory(prev => [...prev, update]);
-        showToast('Nueva actualización recibida', 'info');
+      // Ordenar el historial por fecha más reciente primero
+      const sortedHistory = history.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setOrderHistory(sortedHistory);
+
+      // Suscribirse a actualizaciones en tiempo real
+      const unsubscribe = orderService.subscribeToOrderUpdates(order.id.toString(), (update) => {
+        console.log('Nueva actualización recibida:', update);
+        setOrderHistory(prev => [update, ...prev]);
+        showToast('Estado de la orden actualizado', 'info');
       });
 
-      // Guardar la función de limpieza para usarla cuando se cierre el modal
-      setCleanupSubscription(() => unsubscribe);
+      // Guardar la función de limpieza
+      setCleanupSubscription(() => () => {
+        unsubscribe();
+        console.log('Limpieza de suscripción completada');
+      });
+
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Error al cargar el historial', 'error');
     } finally {
@@ -334,11 +343,22 @@ const OrderList: React.FC<OrderListProps> = ({
             ) : orderHistory.length > 0 ? (
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {orderHistory.map((event) => (
-                  <div key={event.id} className="border-l-4 border-blue-500 pl-4 py-2">
+                  <div 
+                    key={event.id} 
+                    className={`border-l-4 ${
+                      event.is_recent ? 'border-green-500 bg-green-50' : 'border-blue-500'
+                    } pl-4 py-2 relative`}
+                  >
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium text-gray-900">{event.status}</p>
                         <p className="text-sm text-gray-600">{event.notes}</p>
+                        {event.is_recent && (
+                          <span className="inline-flex items-center px-2 py-1 mt-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span className="animate-pulse mr-1">●</span>
+                            Actualización reciente
+                          </span>
+                        )}
                       </div>
                       <span className="text-sm text-gray-500">
                         {formatDate(event.created_at)}
