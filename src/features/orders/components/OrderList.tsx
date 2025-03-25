@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../app/store';
 import { Order, OrderHistory } from '../types/order.types';
@@ -38,6 +38,18 @@ const OrderList: React.FC<OrderListProps> = ({
   const [driverId, setDriverId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Cleanup function for socket subscription
+  const [cleanupSubscription, setCleanupSubscription] = useState<(() => void) | null>(null);
+
+  useEffect(() => {
+    // Cleanup cuando el componente se desmonta o el modal se cierra
+    return () => {
+      if (cleanupSubscription) {
+        cleanupSubscription();
+      }
+    };
+  }, [cleanupSubscription]);
+
   const handleAssignOrder = (orderId: string) => {
     setSelectedOrderId(orderId);
     setIsModalOpen(true);
@@ -51,6 +63,15 @@ const OrderList: React.FC<OrderListProps> = ({
     try {
       const history = await orderService.getOrderHistory(order.id);
       setOrderHistory(history);
+      
+  
+      const unsubscribe = orderService.suscribeToOrderUpdates(order.id.toString(), (update) => {
+        setOrderHistory(prev => [...prev, update]);
+        showToast('Nueva actualización recibida', 'info');
+      });
+
+      // Guardar la función de limpieza para usarla cuando se cierre el modal
+      setCleanupSubscription(() => unsubscribe);
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Error al cargar el historial', 'error');
     } finally {
@@ -285,9 +306,13 @@ const OrderList: React.FC<OrderListProps> = ({
       <Modal
         isOpen={isHistoryModalOpen}
         onClose={() => {
+          if (cleanupSubscription) {
+            cleanupSubscription();
+          }
           setIsHistoryModalOpen(false);
           setSelectedOrder(null);
           setOrderHistory([]);
+          setCleanupSubscription(null);
         }}
         title={`Historial de Orden #${selectedOrder?.id}`}
       >

@@ -56,7 +56,18 @@ export const authService = {
       };
     }
 
+    // Guardar el token en localStorage
+    if (responseData.token) {
+      localStorage.setItem('token', responseData.token);
+      console.log('Token guardado en localStorage');
+    }
+
     return responseData;
+  },
+
+  logout: () => {
+    localStorage.removeItem('token');
+    console.log('Token removido de localStorage');
   },
 
   forgotPassword: async (data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {

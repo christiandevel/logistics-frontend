@@ -1,5 +1,6 @@
+import { io, Socket } from 'socket.io-client';
 import api from '../../../app/api';
-import { CreateOrderRequest, CreateOrderResponse, Order, OrderHistory } from '../types/order.types';
+import { CreateOrderRequest, Order, OrderHistory } from '../types/order.types';
 
 export type OrderStatus = 'PENDING' | 'PICKED_UP'  | 'DELIVERED' | 'ALL';
 
@@ -39,4 +40,37 @@ export const orderService = {
     const response = await api.get(`/shipments/${orderId}/history`);
     return response.data;
   },
+  
+  suscribeToOrderUpdates: async (orderId: string, callback: (update: OrderHistory) => void) => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      console.error('No se encontró el token en el localStorage');
+      return () => {};
+    }
+    
+    
+    const socket: Socket = io(backendUrl, {
+      path: '/socket.io',
+      transports: ['websocket', 'polling'],
+      autoConnect: true,
+      auth: {
+        token: token
+      }
+    });
+    
+    socket.on('connect', () => {
+      console.log('Conectado con SocketIO');
+    });
+    
+    socket.on('disconnect', () => {
+      console.log('Desconectado con SocketIO');
+    });
+    
+    socket.on('connect_error', (error) => {
+      console.error('Error de conexión con SocketIO', error);
+    });
+    
+  }
 }; 
