@@ -4,25 +4,30 @@ import { RootState } from '../../../app/store';
 import { Order } from '../types/order.types';
 import Modal from '../../../components/ui/Modal';
 import { showToast } from '../../../components/ui/Toast';
+import { orderService, OrderStatus } from '../services/order.service';
 
-const statusColors = {
+const statusColors: Record<OrderStatus, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
-  IN_PROGRESS: 'bg-blue-100 text-blue-800',
+  PICKED_UP: 'bg-purple-100 text-purple-800',
+  IN_TRANSIT: 'bg-blue-100 text-blue-800',
   DELIVERED: 'bg-green-100 text-green-800',
   CANCELLED: 'bg-red-100 text-red-800',
+  ALL: '', // Este estado no se usa para mostrar colores
 };
 
 interface OrderListProps {
   orders: Order[];
   title: string;
   emptyMessage: string;
+  onOrderAssigned?: () => void;
 }
 
-const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage }) => {
+const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage, onOrderAssigned }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [driverId, setDriverId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAssignOrder = (orderId: string) => {
     setSelectedOrderId(orderId);
@@ -30,13 +35,21 @@ const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage }) =>
   };
 
   const handleSubmitAssignment = async () => {
+    if (!selectedOrderId || !driverId) return;
+
+    setIsSubmitting(true);
     try {
-      // TODO: Implementar la llamada al servicio para asignar la orden
+      await orderService.assignDriver(selectedOrderId, driverId);
       showToast('Orden asignada exitosamente', 'success');
       setIsModalOpen(false);
       setDriverId('');
+      if (onOrderAssigned) {
+        onOrderAssigned();
+      }
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Error al asignar la orden', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -50,16 +63,28 @@ const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage }) =>
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">{title}</h2>
+      {title && <h2 className="text-2xl font-bold">{title}</h2>}
       <div className="grid gap-6">
         {orders.map((order) => (
           <div key={order.id} className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-lg font-semibold">Orden #{order.id}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold">Orden #{order.id}</h3>
+                  <span className="text-sm text-gray-500">
+                    ({order.tracking_number})
+                  </span>
+                </div>
                 <p className="text-sm text-gray-500">
-                  Creada el {new Date(order.createdAt).toLocaleDateString()}
+                  Creada el {new Date(order.created_at).toLocaleDateString()}
                 </p>
+                {order.driverInfo && (
+                  <div className="mt-2 text-sm">
+                    <span className="font-medium text-gray-700">Transportador: </span>
+                    <span className="text-gray-600">{order.driverInfo.full_name}</span>
+                    <span className="text-gray-400 ml-2">({order.driverInfo.email})</span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-4">
                 <span
@@ -91,11 +116,11 @@ const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage }) =>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Ciudad de Destino</p>
-                <p className="mt-1">{order.destinationCity}</p>
+                <p className="mt-1">{order.destination_city}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Código Postal</p>
-                <p className="mt-1">{order.destinationZipcode}</p>
+                <p className="mt-1">{order.destination_zipcode}</p>
               </div>
             </div>
 
@@ -112,18 +137,27 @@ const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage }) =>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Tipo</p>
-                <p className="mt-1">{order.productType}</p>
+                <p className="mt-1">{order.product_type}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Frágil</p>
-                <p className="mt-1">{order.isFragile ? 'Sí' : 'No'}</p>
+                <p className="mt-1">{order.is_fragile ? 'Sí' : 'No'}</p>
               </div>
             </div>
 
-            {order.specialInstructions && (
+            {order.special_instructions && (
               <div className="mt-4">
                 <p className="text-sm font-medium text-gray-500">Instrucciones Especiales</p>
-                <p className="mt-1 text-gray-700">{order.specialInstructions}</p>
+                <p className="mt-1 text-gray-700">{order.special_instructions}</p>
+              </div>
+            )}
+
+            {order.estimated_delivery_date && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-500">Fecha Estimada de Entrega</p>
+                <p className="mt-1 text-gray-700">
+                  {new Date(order.estimated_delivery_date).toLocaleDateString()}
+                </p>
               </div>
             )}
           </div>
@@ -158,15 +192,16 @@ const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage }) =>
                 setDriverId('');
               }}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              disabled={isSubmitting}
             >
               Cancelar
             </button>
             <button
               onClick={handleSubmitAssignment}
-              disabled={!driverId.trim()}
+              disabled={!driverId.trim() || isSubmitting}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              Asignar
+              {isSubmitting ? 'Asignando...' : 'Asignar'}
             </button>
           </div>
         </div>
