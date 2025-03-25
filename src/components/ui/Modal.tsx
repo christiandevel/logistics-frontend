@@ -7,6 +7,14 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
+/**
+ * Modal component used to show a modal
+ * @param isOpen - If the modal is open
+ * @param onClose - Function to close the modal
+ * @param title - Title of the modal
+ * @param children - Children of the modal
+ * @returns Modal component
+ */
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 

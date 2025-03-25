@@ -1,5 +1,9 @@
 import React from 'react';
 
+/**
+ * Login image component used to show the login image
+ * @returns Login image component
+ */
 const LoginImage: React.FC = () => {
   return (
     <div className="hidden lg:block lg:w-1/2 bg-cover bg-center bg-no-repeat h-screen relative"

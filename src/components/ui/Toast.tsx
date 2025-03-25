@@ -1,9 +1,9 @@
 import { ToastContainer, toast, ToastOptions } from 'react-toastify';
 
-// Tipos de notificación disponibles
+// Available notification types
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
-// Configuración por defecto para las notificaciones
+// Default options for the notifications
 const defaultOptions: ToastOptions = {
   position: 'top-right',
   autoClose: 5000,
@@ -15,7 +15,7 @@ const defaultOptions: ToastOptions = {
   theme: 'light',
 };
 
-// Función para mostrar notificaciones
+// Function to show notifications
 export const showToast = (message: string, type: ToastType = 'info', options?: ToastOptions) => {
   const toastOptions = { ...defaultOptions, ...options };
 
@@ -35,7 +35,7 @@ export const showToast = (message: string, type: ToastType = 'info', options?: T
   }
 };
 
-// Componente contenedor de notificaciones
+// Notification container component
 const Toast = () => {
   return (
     <ToastContainer
