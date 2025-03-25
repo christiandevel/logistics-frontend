@@ -23,17 +23,17 @@ interface MenuItem {
 const menuByRole: Record<string, MenuItem[]> = {
   admin: [
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'View All Orders', path: '/dashboard/admin/orders' },
-    { label: 'Manage Users', path: '/dashboard/users' },
+    { label: 'Ver Todas las Órdenes', path: '/dashboard/admin/orders' },
+    { label: 'Gestionar Usuarios', path: '/dashboard/users' },
   ],
   driver: [
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'My Orders', path: '/dashboard/my-orders' },
+    { label: 'Mis Órdenes', path: '/dashboard/my-orders' },
   ],
   user: [
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'My Orders', path: '/dashboard/my-orders' },
-    { label: 'Create Order', path: '/dashboard/create-order' },
+    { label: 'Mis Órdenes', path: '/dashboard/my-orders' },
+    { label: 'Crear Nueva Orden', path: '/dashboard/create-order' },
   ],
 };
 
