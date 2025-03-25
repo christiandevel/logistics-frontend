@@ -14,13 +14,11 @@ const ResetFirstPassword = React.lazy(() => import('../features/auth/pages/Reset
 const DashboardLayout = React.lazy(() => import('../features/dashboard/components/DashboardLayout'));
 const Dashboard = React.lazy(() => import('../features/dashboard/components/Dashboard'));
 const CreateOrderForm = React.lazy(() => import('../features/orders/components/CreateOrderForm'));
-const UserOrders = React.lazy(() => import('../features/orders/components/UserOrders'));
 const AdminOrders = React.lazy(() => import('../features/orders/components/AdminOrders'));
-const DriverOrders = React.lazy(() => import('../features/orders/components/DriverOrders'));
 const OrdersContainer = React.lazy(() => import('../features/orders/components/OrdersContainer'));
 const UserManagement = React.lazy(() => import('../features/users/components/UserManagement'));
 
-// Componente de protección de rutas
+// Protected route
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
@@ -35,6 +33,7 @@ const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?
   return <>{children}</>;
 };
 
+// Router
 export const router = createBrowserRouter([
   {
     path: '/login',
