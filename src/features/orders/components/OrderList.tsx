@@ -32,7 +32,9 @@ const historyMessageLabels: Record<string, string> = {
   // Aquí se irán agregando más traducciones según se necesiten
   'Shipment created': 'Orden creada',
   'Driver assigned': 'Conductor asignado',
+  'Status changed from PICKED_UP to PENDING': 'Estado actualizado a Pendiente',
   'Status changed from PENDING to PICKED_UP': 'Estado actualizado a Recogido',
+  'Estado actualizado a DELIVERED': 'Estado actualizado a Entregado',
 };
 
 interface OrderListProps {
