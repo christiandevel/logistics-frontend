@@ -9,9 +9,7 @@ import { orderService, OrderStatus } from '../services/order.service';
 const statusColors: Record<OrderStatus, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
   PICKED_UP: 'bg-purple-100 text-purple-800',
-  IN_TRANSIT: 'bg-blue-100 text-blue-800',
   DELIVERED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-red-100 text-red-800',
   ALL: '', // Este estado no se usa para mostrar colores
 };
 
@@ -20,9 +18,16 @@ interface OrderListProps {
   title: string;
   emptyMessage: string;
   onOrderAssigned?: () => void;
+  showStatusUpdateButton?: boolean;
 }
 
-const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage, onOrderAssigned }) => {
+const OrderList: React.FC<OrderListProps> = ({ 
+  orders, 
+  title, 
+  emptyMessage, 
+  onOrderAssigned,
+  showStatusUpdateButton = false
+}) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -50,6 +55,30 @@ const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage, onOr
       showToast(error.response?.data?.message || 'Error al asignar la orden', 'error');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const getNextStatus = (currentStatus: Exclude<OrderStatus, 'ALL'>): Exclude<OrderStatus, 'ALL'> | null => {
+    const statusFlow: { [key in Exclude<OrderStatus, 'ALL'>]: Exclude<OrderStatus, 'ALL'> } = {
+      PENDING: 'PICKED_UP',
+      PICKED_UP: 'DELIVERED',
+      DELIVERED: 'DELIVERED',
+    };
+    return statusFlow[currentStatus] || null;
+  };
+
+  const handleStatusUpdate = async (order: Order) => {
+    const nextStatus = getNextStatus(order.status);
+    if (!nextStatus) return;
+
+    try {
+      await orderService.updateOrderStatus(order.id, nextStatus);
+      showToast(`Estado actualizado a: ${nextStatus}`, 'success');
+      if (onOrderAssigned) {
+        onOrderAssigned(); // Recargar las órdenes después de actualizar
+      }
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error al actualizar el estado', 'error');
     }
   };
 
@@ -100,6 +129,14 @@ const OrderList: React.FC<OrderListProps> = ({ orders, title, emptyMessage, onOr
                     className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                   >
                     Asignar
+                  </button>
+                )}
+                {showStatusUpdateButton && getNextStatus(order.status) && (
+                  <button
+                    onClick={() => handleStatusUpdate(order)}
+                    className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    Actualizar Estado
                   </button>
                 )}
               </div>

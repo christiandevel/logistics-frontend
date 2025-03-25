@@ -3,7 +3,6 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { RootState } from './store';
-
 // Lazy loading de componentes
 const Login = React.lazy(() => import('../features/auth/pages/Login'));
 const Register = React.lazy(() => import('../features/auth/pages/Register'));
@@ -16,6 +15,8 @@ const Dashboard = React.lazy(() => import('../features/dashboard/components/Dash
 const CreateOrderForm = React.lazy(() => import('../features/orders/components/CreateOrderForm'));
 const UserOrders = React.lazy(() => import('../features/orders/components/UserOrders'));
 const AdminOrders = React.lazy(() => import('../features/orders/components/AdminOrders'));
+const DriverOrders = React.lazy(() => import('../features/orders/components/DriverOrders'));
+const OrdersContainer = React.lazy(() => import('../features/orders/components/OrdersContainer'));
 
 // Componente de protección de rutas
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -120,7 +121,7 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute roles={['driver', 'user']}>
             <React.Suspense fallback={<LoadingSpinner />}>
-              <UserOrders />
+              <OrdersContainer />
             </React.Suspense>
           </ProtectedRoute>
         ),

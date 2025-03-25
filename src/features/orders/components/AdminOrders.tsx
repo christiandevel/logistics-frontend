@@ -4,7 +4,7 @@ import { Order } from '../types/order.types';
 import { showToast } from '../../../components/ui/Toast';
 import OrderList from './OrderList';
 
-const orderStatuses: OrderStatus[] = ['ALL', 'PENDING', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED'];
+const orderStatuses: OrderStatus[] = ['ALL', 'PENDING', 'PICKED_UP', 'DELIVERED'];
 
 const AdminOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
